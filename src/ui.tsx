@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import type { TicketStatus, TicketType } from './shared';
+import type { TicketStatus, TicketType } from './types';
 import type { ComponentProps, ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { colors } from './config';

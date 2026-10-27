@@ -8,7 +8,7 @@ import {
   type SurveyReport,
   type TicketDetail,
   type TicketSummary
-} from '../shared';
+} from '../types';
 import { randomUUID } from 'expo-crypto';
 import {
   createContext,

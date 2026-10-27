@@ -1,4 +1,4 @@
-import type { ApiError } from './shared';
+import type { ApiError } from './types';
 import { API_URL } from './config';
 
 export class ApiRequestError extends Error {

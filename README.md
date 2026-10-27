@@ -30,22 +30,13 @@ Expo SDK 58 · React Native 0.88 · TypeScript. The server (API, web, database) 
    ```
 4. Sign in as a field staff member of the sample data, e.g. `armando.cossa` / `Edm@2026`.
 
-## The API contract (`src/shared`)
+## Data formats (`src/types.ts`)
 
-`src/shared` holds the types, request schemas and constants of the EDM Tasks API (a ticket's fields, the help
-request kinds, …), copied from `EDM-Task-Management/packages/shared`. It is how the type checker knows what the
-server sends and expects. It holds no data: the app reads and writes everything through the API, on the same
-database as the web.
-
-When the server's API changes, copy it again:
-
-```bash
-pnpm sync-shared                 # from ../EDM-Task-Management
-EDM_TASKS_DIR=/path/to/EDM-Task-Management pnpm sync-shared
-pnpm sync-shared:check           # tells whether the copy is out of date, without changing it
-```
-
-Do not edit `src/shared` here; change the server repository and copy again.
+`src/types.ts` describes the data the app exchanges with the EDM Tasks API: a ticket's fields, the help request
+kinds, the materials on a job, and so on. The API's own definitions (EDM-Task-Management, `apps/api/src/contract`)
+are the reference: when the API changes a format, change `src/types.ts` to match. The API description at
+`/api/docs` on the server shows the current formats. The file holds no data: the app reads and writes everything
+through the API, on the same database as the web.
 
 ## Checks
 

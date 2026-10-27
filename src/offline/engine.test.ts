@@ -1,4 +1,4 @@
-import type { TicketStatus } from '../shared';
+import type { TicketStatus } from '../types';
 import { describe, expect, it, vi } from 'vitest';
 import {
   applyPending,

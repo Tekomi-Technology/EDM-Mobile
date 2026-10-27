@@ -1,4 +1,4 @@
-import type { TicketSummary } from '../shared';
+import type { TicketSummary } from '../types';
 import { Image, Linking, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { EDM_EMBLEM } from '../assets';
 import { colors } from '../config';

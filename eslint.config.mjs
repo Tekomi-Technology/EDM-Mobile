@@ -4,8 +4,7 @@ import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 
 export default tseslint.config(
-  // src/shared is copied from the server repository by `pnpm sync-shared` and checked there.
-  { ignores: ['node_modules/**', '.expo/**', 'dist/**', 'src/shared/**'] },
+  { ignores: ['node_modules/**', '.expo/**', 'dist/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettier,

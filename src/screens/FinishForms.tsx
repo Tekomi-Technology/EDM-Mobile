@@ -5,7 +5,7 @@ import {
   type MyVan,
   type StockUnit,
   type SurveyResult
-} from '../shared';
+} from '../types';
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { colors } from '../config';

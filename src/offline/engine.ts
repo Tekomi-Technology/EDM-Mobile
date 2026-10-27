@@ -3,7 +3,7 @@
  * Field staff often work where there is no signal: everything they do is put in a queue, shown at once, and sent
  * in order when the phone is back online. Nothing here talks to the network directly; callers pass that in.
  */
-import type { MaterialLine, SurveyReport, TicketStatus } from '../shared';
+import type { MaterialLine, SurveyReport, TicketStatus } from '../types';
 
 export interface QueuedPhoto {
   /** Copy of the photo in the app's own storage, so the phone cannot clean it up before it is sent. */

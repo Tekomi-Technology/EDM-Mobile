@@ -1,4 +1,4 @@
-import type { HelpRequestView } from '../shared';
+import type { HelpRequestView } from '../types';
 import { useState } from 'react';
 import { Alert, Linking, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 import { useAuth } from '../auth';

@@ -1,4 +1,4 @@
-import type { MaterialLine, TicketDetail } from '../shared';
+import type { MaterialLine, TicketDetail } from '../types';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Image, Linking, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
