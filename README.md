@@ -25,7 +25,7 @@ Expo SDK 58 · React Native 0.88 · TypeScript. The server (API, web, database) 
 3. Here:
    ```bash
    pnpm install
-   cp .env.example .env.local   # put in your LAN address (overrides .env, not committed)
+   cp .env.example .env      # put in your LAN address (.env is not committed)
    pnpm start                # scan the QR code with Expo Go
    ```
 4. Sign in as a field staff member of the sample data, e.g. `armando.cossa` / `Edm@2026`.

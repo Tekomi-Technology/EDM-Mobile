@@ -30,7 +30,8 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# Local env files: each person's own LAN address goes in .env.local, which overrides .env
+# Local settings (each person's API and Keycloak address on their LAN); .env.example is the template
+.env
 .env*.local
 
 # typescript
