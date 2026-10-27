@@ -1,0 +1,6 @@
+node_modules
+.expo
+dist
+pnpm-lock.yaml
+# Copied from the server repository by `pnpm sync-shared`; kept exactly as there.
+src/shared

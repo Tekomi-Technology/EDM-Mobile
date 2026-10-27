@@ -1,0 +1,23 @@
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
+import globals from 'globals';
+
+export default tseslint.config(
+  // src/shared is copied from the server repository by `pnpm sync-shared` and checked there.
+  { ignores: ['node_modules/**', '.expo/**', 'dist/**', 'src/shared/**'] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  prettier,
+  {
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/consistent-type-imports': 'off'
+    }
+  },
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: globals.node }
+  }
+);

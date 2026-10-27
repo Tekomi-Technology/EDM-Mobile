@@ -1,0 +1,55 @@
+{
+  "expo": {
+    "name": "EDM Field",
+    "slug": "edm-field",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "mz.co.edm.field"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "mz.co.edm.field"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-web-browser",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "EDM Field uses the camera to take photos of the work you have done.",
+          "photosPermission": "EDM Field attaches photos of the work to the job."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#F39B3A"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "EDM Field shares your location with your team while you are on duty, so the nearest person gets urgent jobs. It stops when you go off duty.",
+          "locationWhenInUsePermission": "EDM Field shares your location with your team while you are on duty.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true,
+          "isIosBackgroundLocationEnabled": true
+        }
+      ]
+    ],
+    "scheme": "edm"
+  }
+}
