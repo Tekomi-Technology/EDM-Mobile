@@ -26,7 +26,12 @@ export type TicketStatus =
   | 'reopened'
   | 'cancelled';
 export type TicketType =
-  'customer_complaint' | 'network_incident' | 'planned_work' | 'new_customer_survey' | 'new_connection';
+  | 'customer_complaint'
+  | 'network_incident'
+  | 'planned_work'
+  | 'new_customer_survey'
+  | 'new_connection'
+  | 'other';
 
 /** What help field staff can ask the back office for. */
 export const HELP_KINDS = ['second_person', 'truck', 'material', 'switch_off', 'advice', 'other'] as const;

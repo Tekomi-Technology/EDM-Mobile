@@ -1,14 +1,4 @@
-import {
-  exchangeCodeAsync,
-  makeRedirectUri,
-  refreshAsync,
-  TokenError,
-  TokenResponse,
-  useAuthRequest,
-  type DiscoveryDocument
-} from 'expo-auth-session';
 import * as SecureStore from 'expo-secure-store';
-import * as WebBrowser from 'expo-web-browser';
 import {
   createContext,
   useCallback,
@@ -20,22 +10,26 @@ import {
   type ReactNode
 } from 'react';
 import { ApiRequestError } from './api';
-import { KEYCLOAK_CLIENT_ID, KEYCLOAK_ISSUER } from './config';
+import { API_URL } from './config';
+import type { ApiError } from './types';
 
-WebBrowser.maybeCompleteAuthSession();
+const STORE_KEY = 'edm.session';
 
-const STORE_KEY = 'edm.tokens';
+/** What the phone keeps between launches: the session's renewal token lasts a month (Settings in the web app). */
+interface Session {
+  accessToken: string;
+  /** Milliseconds since 1970. */
+  expiresAt: number;
+  refreshToken: string;
+  mustChangePassword: boolean;
+}
 
-/**
- * Keycloak's addresses, written out instead of fetched, so the app opens and refreshes tokens without first
- * having to reach the server (staff often start the day with no signal).
- */
-const discovery: DiscoveryDocument = {
-  authorizationEndpoint: `${KEYCLOAK_ISSUER}/protocol/openid-connect/auth`,
-  tokenEndpoint: `${KEYCLOAK_ISSUER}/protocol/openid-connect/token`,
-  revocationEndpoint: `${KEYCLOAK_ISSUER}/protocol/openid-connect/revoke`,
-  endSessionEndpoint: `${KEYCLOAK_ISSUER}/protocol/openid-connect/logout`
-};
+interface SignInAnswer {
+  accessToken: string;
+  expiresIn: number;
+  refreshToken: string;
+  mustChangePassword: boolean;
+}
 
 const sessionEnded = () =>
   new ApiRequestError({
@@ -43,47 +37,93 @@ const sessionEnded = () =>
     code: 'SESSION_ENDED',
     message: 'Your session has ended. Please sign in again.'
   });
+const offline = () =>
+  new ApiRequestError({
+    statusCode: 0,
+    code: 'OFFLINE',
+    message: 'No connection. Your work is saved on the phone and will be sent later.'
+  });
+
+async function post(path: string, body: unknown, token?: string): Promise<Response> {
+  try {
+    return await fetch(`${API_URL}/auth/${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify(body)
+    });
+  } catch {
+    throw offline();
+  }
+}
+
+async function refused(res: Response): Promise<ApiRequestError> {
+  const data = (await res.json().catch(() => null)) as ApiError | null;
+  return new ApiRequestError(
+    data ?? { statusCode: res.status, code: 'ERROR', message: 'The server did not answer' }
+  );
+}
+
+/** The API's refusal in plain words for the sign-in screen. */
+export function signInMessage(err: unknown): string {
+  if (!(err instanceof ApiRequestError)) return 'Something went wrong. Please try again.';
+  const { code, details } = err.error as ApiError & {
+    details?: { minutes?: number; reason?: string; minLength?: number };
+  };
+  if (code === 'OFFLINE') return 'No connection. Sign in once you have signal.';
+  if (code === 'INVALID_CREDENTIALS') return 'Wrong username or password.';
+  if (code === 'ACCOUNT_LOCKED' || code === 'TOO_MANY_ATTEMPTS')
+    return `Too many wrong passwords. Try again in ${details?.minutes ?? 15} min.`;
+  if (code === 'WRONG_PASSWORD') return 'The temporary password is wrong.';
+  if (code === 'PASSWORD_NOT_CHANGED') return 'Choose a password different from the temporary one.';
+  if (code === 'WEAK_PASSWORD') {
+    if (details?.reason === 'too_short')
+      return `The password needs at least ${details.minLength} characters.`;
+    if (details?.reason === 'letters_and_digits') return 'The password needs letters and digits.';
+    if (details?.reason === 'contains_username') return 'The password must not contain your username.';
+  }
+  return err.message;
+}
 
 interface AuthState {
   ready: boolean;
   signedIn: boolean;
-  signIn: () => Promise<void>;
+  /** Signed in with a temporary password: the person chooses their own first. */
+  mustChangePassword: boolean;
+  /** Throws an ApiRequestError when refused (see signInMessage). */
+  signIn: (username: string, password: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   signOut: () => Promise<void>;
   /**
-   * A valid access token, refreshed when close to expiry. Throws an OFFLINE error (statusCode 0) without signing
-   * out when the phone has no connection; signs out only when Keycloak says the session is over.
+   * A valid access token, renewed when close to expiry. Throws an OFFLINE error (statusCode 0) without signing
+   * out when the phone has no connection; signs out only when the server says the session is over.
    */
   accessToken: () => Promise<string>;
-  /** Runs before the tokens are cleared on sign-out (e.g. to stop push notifications for this phone). */
+  /** Runs before the session is cleared on sign-out (e.g. to stop push notifications for this phone). */
   setBeforeSignOut: (fn: (() => Promise<void>) | null) => void;
-  error: string | null;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
 
+const fromAnswer = (a: SignInAnswer): Session => ({
+  accessToken: a.accessToken,
+  expiresAt: Date.now() + a.expiresIn * 1000,
+  refreshToken: a.refreshToken,
+  mustChangePassword: a.mustChangePassword
+});
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const redirectUri = makeRedirectUri({ scheme: 'edm', path: 'auth' });
-  // offline_access gives a refresh token that outlives the 8-hour web session, so a whole shift without
-  // signal does not sign the person out.
-  const [request, response, promptAsync] = useAuthRequest(
-    {
-      clientId: KEYCLOAK_CLIENT_ID,
-      scopes: ['openid', 'profile', 'offline_access'],
-      redirectUri,
-      usePKCE: true
-    },
-    discovery
-  );
-  const tokens = useRef<TokenResponse | null>(null);
+  const session = useRef<Session | null>(null);
+  const renewing = useRef<Promise<string> | null>(null);
   const beforeSignOut = useRef<(() => Promise<void>) | null>(null);
   const [signedIn, setSignedIn] = useState(false);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const save = useCallback(async (t: TokenResponse | null) => {
-    tokens.current = t;
-    setSignedIn(!!t);
-    if (t) await SecureStore.setItemAsync(STORE_KEY, JSON.stringify(t.getRequestConfig()));
+  const save = useCallback(async (s: Session | null) => {
+    session.current = s;
+    setSignedIn(!!s);
+    setMustChangePassword(!!s?.mustChangePassword);
+    if (s) await SecureStore.setItemAsync(STORE_KEY, JSON.stringify(s));
     else await SecureStore.deleteItemAsync(STORE_KEY);
   }, []);
 
@@ -92,75 +132,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     SecureStore.getItemAsync(STORE_KEY)
       .then((raw) => {
         if (raw) {
-          tokens.current = new TokenResponse(JSON.parse(raw));
+          session.current = JSON.parse(raw) as Session;
           setSignedIn(true);
+          setMustChangePassword(session.current.mustChangePassword);
         }
       })
       .finally(() => setReady(true));
   }, []);
 
-  useEffect(() => {
-    if (response?.type !== 'success' || !request?.codeVerifier) return;
-    exchangeCodeAsync(
-      {
-        clientId: KEYCLOAK_CLIENT_ID,
-        code: response.params.code!,
-        redirectUri,
-        extraParams: { code_verifier: request.codeVerifier }
-      },
-      discovery
-    )
-      .then(save)
-      .catch((e: Error) => setError(e.message));
-  }, [response, request, redirectUri, save]);
+  const renew = useCallback(async (): Promise<string> => {
+    const current = session.current;
+    if (!current) throw sessionEnded();
+    const res = await post('refresh', { refreshToken: current.refreshToken });
+    if (res.status === 401) {
+      await save(null);
+      throw sessionEnded();
+    }
+    if (!res.ok) throw offline();
+    const next = fromAnswer((await res.json()) as SignInAnswer);
+    await save(next);
+    return next.accessToken;
+  }, [save]);
 
   const value = useMemo<AuthState>(
     () => ({
       ready,
       signedIn,
-      error,
-      signIn: async () => {
-        setError(null);
-        await promptAsync();
+      mustChangePassword,
+      signIn: async (username, password) => {
+        const res = await post('sign-in', { username: username.trim(), password, client: 'app' });
+        if (!res.ok) throw await refused(res);
+        await save(fromAnswer((await res.json()) as SignInAnswer));
+      },
+      changePassword: async (currentPassword, newPassword) => {
+        const current = session.current;
+        if (!current) throw sessionEnded();
+        const token = current.expiresAt - Date.now() > 30_000 ? current.accessToken : await renew();
+        const res = await post('change-password', { currentPassword, newPassword }, token);
+        if (!res.ok) throw await refused(res);
+        await save({ ...session.current!, mustChangePassword: false });
       },
       signOut: async () => {
         await beforeSignOut.current?.().catch(() => undefined);
+        const current = session.current;
+        if (current) await post('sign-out', { refreshToken: current.refreshToken }).catch(() => undefined);
         await save(null);
       },
       setBeforeSignOut: (fn) => {
         beforeSignOut.current = fn;
       },
       accessToken: async () => {
-        const current = tokens.current;
+        const current = session.current;
         if (!current) throw sessionEnded();
-        if (!current.shouldRefresh()) return current.accessToken;
-        if (!current.refreshToken) {
-          await save(null);
-          throw sessionEnded();
-        }
-        try {
-          const refreshed = await refreshAsync(
-            { clientId: KEYCLOAK_CLIENT_ID, refreshToken: current.refreshToken },
-            discovery
-          );
-          // Keycloak may not send a new refresh token every time; keep the old one then.
-          if (!refreshed.refreshToken) refreshed.refreshToken = current.refreshToken;
-          await save(refreshed);
-          return refreshed.accessToken;
-        } catch (e) {
-          if (e instanceof TokenError) {
-            await save(null);
-            throw sessionEnded();
-          }
-          throw new ApiRequestError({
-            statusCode: 0,
-            code: 'OFFLINE',
-            message: 'No connection. Your work is saved on the phone and will be sent later.'
-          });
-        }
+        if (current.expiresAt - Date.now() > 30_000) return current.accessToken;
+        // One renewal at a time: the renewal token changes each time it is used.
+        renewing.current ??= renew().finally(() => {
+          renewing.current = null;
+        });
+        return renewing.current;
       }
     }),
-    [ready, signedIn, error, promptAsync, save]
+    [ready, signedIn, mustChangePassword, save, renew]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

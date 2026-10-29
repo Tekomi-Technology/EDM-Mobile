@@ -36,7 +36,8 @@ export const TYPE_LABEL: Record<TicketType, string> = {
   network_incident: 'Network incident',
   planned_work: 'Planned work',
   new_customer_survey: 'New customer survey',
-  new_connection: 'New connection'
+  new_connection: 'New connection',
+  other: 'Other job'
 };
 
 export const TYPE_ICON: Record<TicketType, IconName> = {
@@ -44,7 +45,8 @@ export const TYPE_ICON: Record<TicketType, IconName> = {
   network_incident: 'zap',
   planned_work: 'tool',
   new_customer_survey: 'home',
-  new_connection: 'home'
+  new_connection: 'home',
+  other: 'help-circle'
 };
 
 const BADGE: Partial<Record<TicketStatus, { bg: string; fg: string }>> = {

@@ -10,18 +10,14 @@ Expo SDK 58 · React Native 0.88 · TypeScript. The server (API, web, database) 
 ## Requirements
 
 - Node 24 and pnpm 10 (`corepack enable`)
-- The EDM Tasks stack running (API, Keycloak): see the EDM-Task-Management README
+- The EDM Tasks API running: see the EDM-Task-Management README
 - On the phone: Expo Go, or a development build for push notifications
 
 ## Run the app on a phone
 
 1. Phone and computer on the same Wi-Fi. Find your computer's LAN address (e.g. `192.168.1.20`).
-2. In EDM-Task-Management, start Keycloak with that address as its public URL, and point the API at it, because
-   the address is written into every token:
-   ```bash
-   KEYCLOAK_PUBLIC_URL=http://192.168.1.20:58080 pnpm infra:up
-   # in its .env: KEYCLOAK_URL=http://192.168.1.20:58080 and S3_PUBLIC_ENDPOINT=http://192.168.1.20:59000
-   ```
+2. In EDM-Task-Management, let photos be reached from the phone: in its .env,
+   `S3_PUBLIC_ENDPOINT=http://192.168.1.20:59000`, then `pnpm services:up` and start the API.
 3. Here:
    ```bash
    pnpm install

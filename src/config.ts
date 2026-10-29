@@ -3,11 +3,6 @@
  * e.g. EXPO_PUBLIC_API_URL=http://192.168.1.20:3000 (see "Run the app on a phone" in README.md).
  */
 export const API_URL = `${process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000'}/api`;
-export const KEYCLOAK_ISSUER = `${process.env.EXPO_PUBLIC_KEYCLOAK_URL ?? 'http://localhost:58080'}/realms/${
-  process.env.EXPO_PUBLIC_KEYCLOAK_REALM ?? 'edm'
-}`;
-export const KEYCLOAK_CLIENT_ID = process.env.EXPO_PUBLIC_KEYCLOAK_CLIENT_ID ?? 'edm-mobile';
-
 export const colors = {
   brand: '#F39B3A',
   brandInk: '#2B1A07',
