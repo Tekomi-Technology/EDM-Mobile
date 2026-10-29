@@ -110,6 +110,11 @@ interface OfflineState {
 
 const OfflineContext = createContext<OfflineState | null>(null);
 const RETRY_MS = 30_000;
+/**
+ * Coming back to the app refreshes the jobs, but not more often than this: on Android a permission dialog also
+ * takes the app to the background and back, and each refresh must not set off another.
+ */
+const REFRESH_ON_RETURN_MS = 30_000;
 
 const isOffline = (e: unknown) => e instanceof ApiRequestError && e.error.statusCode === 0;
 const messageOf = (e: unknown) => (e instanceof Error ? e.message : 'Something went wrong');
@@ -134,6 +139,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const savedRef = useRef(saved);
   const syncing = useRef(false);
   const pushRegistered = useRef<string | null>(null);
+  const lastRefresh = useRef(0);
   savedRef.current = saved;
 
   const storeQueue = useCallback(async (q: QueuedAction[]) => {
@@ -233,6 +239,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   }, [auth, storeQueue]);
 
   const refresh = useCallback(async () => {
+    lastRefresh.current = Date.now();
     setBusy(true);
     try {
       // Send first, so what comes back already includes this person's changes.
@@ -326,7 +333,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     if (!loaded) return;
     void refresh();
     const sub = AppState.addEventListener('change', (s) => {
-      if (s === 'active') void refresh();
+      if (s === 'active' && Date.now() - lastRefresh.current > REFRESH_ON_RETURN_MS) void refresh();
     });
     return () => sub.remove();
   }, [loaded, refresh]);
@@ -342,10 +349,12 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(timer);
   }, [queue.length, sync, refresh]);
 
-  // Share the position only while on duty: start when going on duty, stop when going off.
+  // Share the position only while on duty: start when going on duty, stop when going off. Only these two facts
+  // count, not the person's details, which are fetched again on every refresh.
   const onDuty = saved.me?.onDuty ?? false;
+  const known = saved.me !== null;
   useEffect(() => {
-    if (!loaded || !saved.me) return;
+    if (!loaded || !known) return;
     if (onDuty) {
       startTracking()
         .then(setLocationStatus)
@@ -353,7 +362,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     } else {
       void stopTracking().finally(() => setLocationStatus('off'));
     }
-  }, [loaded, onDuty, saved.me]);
+  }, [loaded, onDuty, known]);
 
   const online_ = useCallback(
     async <T,>(path: string, init?: { method?: 'GET' | 'POST'; body?: unknown }) => {
@@ -387,7 +396,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   );
 
   const enableLocation = useCallback(async () => {
-    setLocationStatus(await startTracking().catch((): LocationStatus => 'off'));
+    setLocationStatus(await startTracking(true).catch((): LocationStatus => 'off'));
   }, []);
 
   // A job notification while the app is open: fetch the new list.

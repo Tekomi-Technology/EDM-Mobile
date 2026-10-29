@@ -1,4 +1,5 @@
 import type { TicketSummary } from '../types';
+import { useState } from 'react';
 import { Image, Linking, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { EDM_EMBLEM } from '../assets';
 import { colors } from '../config';
@@ -38,6 +39,16 @@ function Stat({ value, label, alert }: { value: number; label: string; alert?: b
 export function JobsScreen({ onOpen }: { onOpen: (id: string) => void }) {
   const offline = useOffline();
   const { me, jobs, queue } = offline;
+  // The spinner shows only for a pull; refreshes the app does by itself stay out of sight.
+  const [pulling, setPulling] = useState(false);
+  const pull = async () => {
+    setPulling(true);
+    try {
+      await offline.refresh();
+    } finally {
+      setPulling(false);
+    }
+  };
 
   const offered = jobs.filter((j) => j.status === 'assigned');
   const current =
@@ -111,7 +122,7 @@ export function JobsScreen({ onOpen }: { onOpen: (id: string) => void }) {
 
       <ScrollView
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 32 }}
-        refreshControl={<RefreshControl refreshing={offline.busy} onRefresh={() => void offline.refresh()} />}
+        refreshControl={<RefreshControl refreshing={pulling} onRefresh={() => void pull()} />}
       >
         <OfflineBanner online={offline.online} savedAt={offline.savedAt} waiting={queue.length} />
         <ErrorText message={offline.error} />
