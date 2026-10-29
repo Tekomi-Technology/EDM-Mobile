@@ -58,14 +58,28 @@ TaskManager.defineTask<{ locations: Location.LocationObject[] }>(TASK, async ({ 
 });
 
 /**
- * Starts sharing the position while on duty, also with the screen off (asks for "allow all the time").
- * Android shows a permanent notification while it runs, so staff always know.
+ * "All the time" is asked for once per run of the app: Android answers each request with a dialog or its settings
+ * screen, which takes the person out of the app, and coming back refreshes the jobs. Asking every time would loop.
  */
-export async function startTracking(): Promise<LocationStatus> {
-  const fg = await Location.requestForegroundPermissionsAsync();
+let askedForBackground = false;
+
+/**
+ * Starts sharing the position while on duty, also with the screen off (asks for "allow all the time").
+ * Android shows a permanent notification while it runs, so staff always know. Permissions already given are not
+ * asked for again; `askAgain` (the person tapping "Allow location") asks for "all the time" once more.
+ */
+export async function startTracking(askAgain = false): Promise<LocationStatus> {
+  let fg = await Location.getForegroundPermissionsAsync();
+  if (!fg.granted && fg.canAskAgain) fg = await Location.requestForegroundPermissionsAsync();
   if (!fg.granted) return 'denied';
-  // Without "all the time" it still works while the app is open, so a refusal here is not fatal.
-  await Location.requestBackgroundPermissionsAsync().catch(() => undefined);
+  if (askAgain || !askedForBackground) {
+    askedForBackground = true;
+    // Without "all the time" it still works while the app is open, so a refusal here is not fatal.
+    const bg = await Location.getBackgroundPermissionsAsync().catch(() => null);
+    if (bg && !bg.granted && bg.canAskAgain) {
+      await Location.requestBackgroundPermissionsAsync().catch(() => undefined);
+    }
+  }
   if (await Location.hasStartedLocationUpdatesAsync(TASK).catch(() => false)) return 'on';
   await Location.startLocationUpdatesAsync(TASK, {
     accuracy: Location.Accuracy.Balanced,
