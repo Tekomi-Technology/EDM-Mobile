@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { AuthProvider, useAuth } from './src/auth';
 import { colors } from './src/config';
+import { useLanguage } from './src/i18n';
 import { OfflineProvider } from './src/offline/OfflineProvider';
 import { onNotificationTap } from './src/push';
 import { JobScreen } from './src/screens/JobScreen';
@@ -48,6 +49,8 @@ function Screens() {
 }
 
 export default function App() {
+  // Everything below renders again in the language chosen.
+  useLanguage();
   return (
     <AuthProvider>
       <StatusBar style="dark" />

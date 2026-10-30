@@ -4,6 +4,8 @@ import { EDM_LOGO } from '../assets';
 import { signInMessage, useAuth } from '../auth';
 import { colors } from '../config';
 import { Button, ErrorText, Icon, styles } from '../ui';
+import { t } from '../i18n';
+import { LanguagePicker } from './LanguagePicker';
 
 const field = { ...styles.input, minHeight: 50, textAlignVertical: 'center' as const };
 
@@ -52,10 +54,11 @@ function Frame({ subtitle, children }: { subtitle: string; children: React.React
             source={EDM_LOGO}
             style={{ width: 160, height: 142 }}
             resizeMode="contain"
-            accessibilityLabel="Electricidade de Moçambique, E.P."
+            accessibilityLabel={t('Electricidade de Moçambique, E.P.')}
           />
           <Text style={[styles.title, { fontSize: 30 }]}>EDM Field</Text>
           <Text style={[styles.label, { fontSize: 16, textAlign: 'center' }]}>{subtitle}</Text>
+          <LanguagePicker />
         </View>
         {children}
       </ScrollView>
@@ -83,18 +86,18 @@ export function LoginScreen() {
   };
 
   return (
-    <Frame subtitle="Your technical jobs, on your phone">
-      <Field label="Username" value={username} onChange={setUsername} autoComplete="username" />
-      <Field label="Password" value={password} onChange={setPassword} secret autoComplete="password" />
+    <Frame subtitle={t('Your technical jobs, on your phone')}>
+      <Field label={t('Username')} value={username} onChange={setUsername} autoComplete="username" />
+      <Field label={t('Password')} value={password} onChange={setPassword} secret autoComplete="password" />
       <ErrorText message={error} />
       <Button
-        label="Sign in"
+        label={t('Sign in')}
         onPress={() => void submit()}
         busy={busy}
         disabled={!auth.ready || !username.trim() || !password}
       />
       <Text style={{ textAlign: 'center', color: colors.brandText, fontWeight: '700', fontSize: 15 }}>
-        Forgot password? Ask your team manager
+        {t('Forgot password? Ask your team manager')}
       </Text>
       <View
         style={{
@@ -108,7 +111,7 @@ export function LoginScreen() {
       >
         <Icon name="info" color={colors.brandText} />
         <Text style={{ flex: 1, color: '#4A2C0A', fontSize: 15, lineHeight: 22 }}>
-          Works without internet. Your jobs are kept on the phone and sent when you are back online.
+          {t('Works without internet. Your jobs are kept on the phone and sent when you are back online.')}
         </Text>
       </View>
     </Frame>
@@ -126,7 +129,7 @@ export function ChangePasswordScreen() {
 
   const submit = async () => {
     if (next !== again) {
-      setError('The two new passwords are not the same.');
+      setError(t('The two new passwords are not the same.'));
       return;
     }
     setBusy(true);
@@ -140,31 +143,31 @@ export function ChangePasswordScreen() {
   };
 
   return (
-    <Frame subtitle="You signed in with a temporary password. Choose your own before you continue.">
+    <Frame subtitle={t('You signed in with a temporary password. Choose your own before you continue.')}>
       <Field
-        label="Temporary password"
+        label={t('Temporary password')}
         value={current}
         onChange={setCurrent}
         secret
         autoComplete="password"
       />
-      <Field label="New password" value={next} onChange={setNext} secret autoComplete="new-password" />
+      <Field label={t('New password')} value={next} onChange={setNext} secret autoComplete="new-password" />
       <Field
-        label="New password again"
+        label={t('New password again')}
         value={again}
         onChange={setAgain}
         secret
         autoComplete="new-password"
       />
-      <Text style={styles.label}>Use letters and digits, and not your username.</Text>
+      <Text style={styles.label}>{t('Use letters and digits, and not your username.')}</Text>
       <ErrorText message={error} />
       <Button
-        label="Save and continue"
+        label={t('Save and continue')}
         onPress={() => void submit()}
         busy={busy}
         disabled={!current || !next || !again}
       />
-      <Button label="Sign out" kind="secondary" onPress={() => void auth.signOut()} />
+      <Button label={t('Sign out')} kind="secondary" onPress={() => void auth.signOut()} />
     </Frame>
   );
 }

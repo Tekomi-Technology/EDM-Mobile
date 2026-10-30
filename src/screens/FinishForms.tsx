@@ -9,6 +9,7 @@ import {
 import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { colors } from '../config';
+import { t } from '../i18n';
 import { Button, Card, Icon, styles } from '../ui';
 
 const UNIT: Record<StockUnit, string> = { pcs: 'pcs', m: 'm', kg: 'kg', set: 'set' };
@@ -96,14 +97,14 @@ export function MaterialsPicker({
   if (!van) {
     return (
       <Text style={styles.label}>
-        Material list not saved on the phone yet. Open the app once with signal.
+        {t('Material list not saved on the phone yet. Open the app once with signal.')}
       </Text>
     );
   }
   return (
     <View style={{ gap: 8 }}>
       <Text style={styles.label}>{title}</Text>
-      {items.length === 0 && <Text style={styles.label}>Your van is empty.</Text>}
+      {items.length === 0 && <Text style={styles.label}>{t('Your van is empty.')}</Text>}
       {items.map((i) => {
         const q = qty(i.id);
         const has = inVan.get(i.id);
@@ -112,19 +113,22 @@ export function MaterialsPicker({
             <View style={{ flex: 1 }}>
               <Text style={styles.body}>{i.name}</Text>
               <Text style={styles.label}>
-                {i.code} · {has !== undefined ? `${has} ${UNIT[i.unit]} in the van` : 'not in the van'}
+                {i.code} ·{' '}
+                {has !== undefined
+                  ? t('{0} in the van', { 0: `${has} ${t(UNIT[i.unit])}` })
+                  : t('not in the van')}
               </Text>
             </View>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`Less ${i.name}`}
+              accessibilityLabel={t('Less {0}', { 0: i.name })}
               onPress={() => set(i.id, q - 1)}
               style={stepper}
             >
               <Icon name="minus" size={18} />
             </Pressable>
             <TextInput
-              accessibilityLabel={`${i.name} used`}
+              accessibilityLabel={t('{0} used', { 0: i.name })}
               keyboardType="numeric"
               value={q ? String(q) : ''}
               placeholder="0"
@@ -133,7 +137,7 @@ export function MaterialsPicker({
             />
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`More ${i.name}`}
+              accessibilityLabel={t('More {0}', { 0: i.name })}
               onPress={() => set(i.id, q + 1)}
               style={stepper}
             >
@@ -143,7 +147,12 @@ export function MaterialsPicker({
         );
       })}
       {!showAll && van.catalog.length > items.length && (
-        <Button kind="soft" icon="list" label="Something not in the van" onPress={() => setShowAll(true)} />
+        <Button
+          kind="soft"
+          icon="list"
+          label={t('Something not in the van')}
+          onPress={() => setShowAll(true)}
+        />
       )}
     </View>
   );
@@ -186,35 +195,35 @@ export function SurveyForm({
 }) {
   return (
     <View style={{ gap: 10 }}>
-      <Text style={styles.label}>Result of the survey</Text>
+      <Text style={styles.label}>{t('Result of the survey')}</Text>
       <Choice
         options={['feasible', 'feasible_with_works', 'not_feasible'] as const}
         value={draft.result}
-        label={(v) => SURVEY_LABEL[v]}
+        label={(v) => t(SURVEY_LABEL[v])}
         onChange={(result) => onChange({ ...draft, result })}
       />
-      <Text style={styles.label}>Distance to the network (metres)</Text>
+      <Text style={styles.label}>{t('Distance to the network (metres)')}</Text>
       <TextInput
         keyboardType="numeric"
         value={draft.distance}
         onChangeText={(distance) => onChange({ ...draft, distance })}
         style={styles.input}
       />
-      <Text style={styles.label}>Nearest pole or transformer</Text>
+      <Text style={styles.label}>{t('Nearest pole or transformer')}</Text>
       <TextInput
         value={draft.nearestElement}
         onChangeText={(nearestElement) => onChange({ ...draft, nearestElement })}
-        placeholder="e.g. P-4471"
+        placeholder={t('e.g. P-4471')}
         style={styles.input}
       />
       {draft.result && draft.result !== 'feasible' && (
         <>
-          <Text style={styles.label}>Works needed</Text>
+          <Text style={styles.label}>{t('Works needed')}</Text>
           <TextInput
             value={draft.worksNeeded}
             onChangeText={(worksNeeded) => onChange({ ...draft, worksNeeded })}
             multiline
-            placeholder="e.g. One new pole and 60 m of line"
+            placeholder={t('e.g. One new pole and 60 m of line')}
             style={styles.input}
           />
         </>
@@ -222,7 +231,7 @@ export function SurveyForm({
       {draft.result !== 'not_feasible' && (
         <MaterialsPicker
           van={van}
-          title="Material needed for the connection"
+          title={t('Material needed for the connection')}
           lines={draft.materials}
           onChange={(materials) => onChange({ ...draft, materials })}
         />
@@ -234,95 +243,44 @@ export function SurveyForm({
 export interface InstallationDraft {
   meterNumber: string;
   sealNumber: string;
-  code: string;
-  /** Index of the photo of the signed form among the job's photos. */
-  signedFormPhoto: number | null;
 }
 export const emptyInstallation: InstallationDraft = {
   meterNumber: '',
-  sealNumber: '',
-  code: '',
-  signedFormPhoto: null
+  sealNumber: ''
 };
 
-/** New connections: the meter fitted, and the customer's confirmation (SMS code, or a signed form without signal). */
+/** New connections: the meter installed. The photo of the meter, taken below, is the proof of the job. */
 export function InstallationForm({
   draft,
-  onChange,
-  online,
-  phone,
-  onSendCode,
-  onPhotoForm,
-  busy
+  onChange
 }: {
   draft: InstallationDraft;
   onChange: (d: InstallationDraft) => void;
-  online: boolean;
-  phone: string | null;
-  onSendCode: () => Promise<boolean>;
-  onPhotoForm: () => void;
-  busy: boolean;
 }) {
-  const [sent, setSent] = useState(false);
   return (
     <View style={{ gap: 10 }}>
-      <Text style={styles.label}>Meter number</Text>
+      <Text style={styles.label}>{t('Meter number')}</Text>
       <TextInput
         value={draft.meterNumber}
         onChangeText={(meterNumber) => onChange({ ...draft, meterNumber })}
         autoCapitalize="characters"
         style={styles.input}
       />
-      <Text style={styles.label}>Seal number</Text>
+      <Text style={styles.label}>{t('Seal number')}</Text>
       <TextInput
         value={draft.sealNumber}
         onChangeText={(sealNumber) => onChange({ ...draft, sealNumber })}
         autoCapitalize="characters"
         style={styles.input}
       />
-      <Text style={[styles.cardTitle, { marginTop: 4 }]}>Customer confirms the handover</Text>
-      {draft.signedFormPhoto === null ? (
-        <>
-          <Text style={styles.label}>
-            {phone
-              ? `We text a 4-digit code to ${phone}. Ask the customer to read it to you.`
-              : 'The customer has no phone number. Take a photo of the signed handover form.'}
-          </Text>
-          {phone && (
-            <Button
-              kind="soft"
-              icon="message-square"
-              label={sent ? 'Send the code again' : 'Send code to customer'}
-              busy={busy}
-              onPress={() => void onSendCode().then((ok) => ok && setSent(true))}
-            />
+      <View style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+        <Icon name="camera" color={colors.brandText} />
+        <Text style={[styles.body, { flex: 1 }]}>
+          {t(
+            'Take a photo of the installed meter, with its number and the light that shows power. It is required.'
           )}
-          {phone && (
-            <TextInput
-              accessibilityLabel="Code from the customer"
-              keyboardType="number-pad"
-              maxLength={4}
-              value={draft.code}
-              onChangeText={(code) => onChange({ ...draft, code: code.replace(/\D/g, '') })}
-              placeholder="Code"
-              style={[styles.input, { fontSize: 22, letterSpacing: 8, textAlign: 'center' }]}
-            />
-          )}
-          {(!online || !phone) && (
-            <Button kind="secondary" icon="camera" label="Photo of the signed form" onPress={onPhotoForm} />
-          )}
-        </>
-      ) : (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Icon name="check-circle" color="#067647" />
-          <Text style={[styles.body, { flex: 1 }]}>Photo of the signed form added.</Text>
-          <Button
-            kind="secondary"
-            label="Remove"
-            onPress={() => onChange({ ...draft, signedFormPhoto: null })}
-          />
-        </View>
-      )}
+        </Text>
+      </View>
     </View>
   );
 }
@@ -341,22 +299,22 @@ export function HelpBox({
   const [message, setMessage] = useState('');
   return (
     <Card>
-      <Text style={styles.cardTitle}>Ask for help</Text>
-      <Choice options={HELP_KINDS} value={kind} label={(v) => HELP_LABEL[v]} onChange={setKind} />
+      <Text style={styles.cardTitle}>{t('Ask for help')}</Text>
+      <Choice options={HELP_KINDS} value={kind} label={(v) => t(HELP_LABEL[v])} onChange={setKind} />
       <TextInput
         value={message}
         onChangeText={setMessage}
         multiline
-        placeholder="What do you need?"
+        placeholder={t('What do you need?')}
         style={styles.input}
       />
       <Button
-        label="Send to the office"
+        label={t('Send to the office')}
         icon="send"
         busy={busy}
         onPress={() => void onSend(kind, message.trim())}
       />
-      <Button kind="secondary" label="Never mind" onPress={onClose} />
+      <Button kind="secondary" label={t('Never mind')} onPress={onClose} />
     </Card>
   );
 }

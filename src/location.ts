@@ -4,6 +4,7 @@ import * as TaskManager from 'expo-task-manager';
 import { API_URL } from './config';
 import { appendPoints, uploadPoints, type QueuedPoint } from './offline/locations';
 import { readJson, writeJson } from './offline/storage';
+import { t } from './i18n';
 
 /** Background task name; defined at import time, as the operating system may start the app just to run it. */
 const TASK = 'edm-location';
@@ -90,7 +91,7 @@ export async function startTracking(askAgain = false): Promise<LocationStatus> {
     showsBackgroundLocationIndicator: true,
     foregroundService: {
       notificationTitle: 'EDM Field',
-      notificationBody: 'Sharing your location while you are on duty',
+      notificationBody: t('Sharing your location while you are on duty'),
       notificationColor: '#F39B3A'
     }
   });

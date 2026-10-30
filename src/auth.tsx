@@ -12,6 +12,7 @@ import {
 import { ApiRequestError } from './api';
 import { API_URL } from './config';
 import type { ApiError } from './types';
+import { t } from './i18n';
 
 const STORE_KEY = 'edm.session';
 
@@ -65,23 +66,23 @@ async function refused(res: Response): Promise<ApiRequestError> {
 
 /** The API's refusal in plain words for the sign-in screen. */
 export function signInMessage(err: unknown): string {
-  if (!(err instanceof ApiRequestError)) return 'Something went wrong. Please try again.';
+  if (!(err instanceof ApiRequestError)) return t('Something went wrong. Please try again.');
   const { code, details } = err.error as ApiError & {
     details?: { minutes?: number; reason?: string; minLength?: number };
   };
-  if (code === 'OFFLINE') return 'No connection. Sign in once you have signal.';
-  if (code === 'INVALID_CREDENTIALS') return 'Wrong username or password.';
+  if (code === 'OFFLINE') return t('No connection. Sign in once you have signal.');
+  if (code === 'INVALID_CREDENTIALS') return t('Wrong username or password.');
   if (code === 'ACCOUNT_LOCKED' || code === 'TOO_MANY_ATTEMPTS')
-    return `Too many wrong passwords. Try again in ${details?.minutes ?? 15} min.`;
-  if (code === 'WRONG_PASSWORD') return 'The temporary password is wrong.';
-  if (code === 'PASSWORD_NOT_CHANGED') return 'Choose a password different from the temporary one.';
+    return t('Too many wrong passwords. Try again in {0} min.', { 0: details?.minutes ?? 15 });
+  if (code === 'WRONG_PASSWORD') return t('The temporary password is wrong.');
+  if (code === 'PASSWORD_NOT_CHANGED') return t('Choose a password different from the temporary one.');
   if (code === 'WEAK_PASSWORD') {
     if (details?.reason === 'too_short')
-      return `The password needs at least ${details.minLength} characters.`;
-    if (details?.reason === 'letters_and_digits') return 'The password needs letters and digits.';
-    if (details?.reason === 'contains_username') return 'The password must not contain your username.';
+      return t('The password needs at least {0} characters.', { 0: details.minLength });
+    if (details?.reason === 'letters_and_digits') return t('The password needs letters and digits.');
+    if (details?.reason === 'contains_username') return t('The password must not contain your username.');
   }
-  return err.message;
+  return t(err.message);
 }
 
 interface AuthState {

@@ -13,7 +13,17 @@ export type StockUnit = 'pcs' | 'm' | 'kg' | 'set';
 export type SupplyType = 'single_phase' | 'three_phase';
 export type SurveyResult = 'feasible' | 'feasible_with_works' | 'not_feasible';
 export type TicketAction =
-  'assign' | 'accept' | 'decline' | 'start' | 'hold' | 'resume' | 'resolve' | 'close' | 'reopen' | 'cancel';
+  | 'assign'
+  | 'claim'
+  | 'accept'
+  | 'decline'
+  | 'start'
+  | 'hold'
+  | 'resume'
+  | 'resolve'
+  | 'close'
+  | 'reopen'
+  | 'cancel';
 export type TicketSource = 'call_center' | 'sales' | 'nms' | 'network_team' | 'office';
 export type TicketStatus =
   | 'new'
@@ -81,6 +91,22 @@ export interface AttachmentView {
   createdAt: string;
 }
 
+export interface TicketOffer {
+  teamName: string;
+  /** Field staff told the last time (everyone of the team except those who gave it back). */
+  notified: string[];
+  /** 1 the first time, then one more each time the team is told again. */
+  round: number;
+  at: string;
+}
+
+/** A job offered to the whole team that nobody has claimed yet (GET /me/offers): whoever claims it first has it. */
+export interface TeamOffer extends TicketSummary {
+  /** Metres from the staff member's last known position, when both are known. */
+  distanceM: number | null;
+  offer: TicketOffer | null;
+}
+
 export interface TicketDetail extends TicketSummary {
   description: string;
   externalRef: string | null;
@@ -105,6 +131,8 @@ export interface TicketDetail extends TicketSummary {
   incident: { id: string; code: string; title: string; status: TicketStatus } | null;
   /** 0 = on time; 1 = staff reminded; 2 = late, team manager and NOC told; 3 = badly late, technical manager told. */
   escalationLevel: number;
+  /** While nobody has claimed it: the last time the team was told, and who. */
+  offer: TicketOffer | null;
   /** Materials recorded on the job; deducted from stock when the ticket closes. */
   materials: TicketMaterialView[];
   /** Materials set aside in a depot for this ticket. */

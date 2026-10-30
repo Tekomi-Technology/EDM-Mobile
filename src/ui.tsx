@@ -3,6 +3,7 @@ import type { TicketStatus, TicketType } from './types';
 import type { ComponentProps, ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { colors } from './config';
+import { locale, t } from './i18n';
 
 export type IconName = ComponentProps<typeof Feather>['name'];
 
@@ -107,7 +108,7 @@ export function Badge({ status }: { status: TicketStatus }) {
   return (
     <View style={[styles.badge, { backgroundColor: c.bg }]}>
       <View style={[styles.dot, { backgroundColor: c.fg }]} />
-      <Text style={[styles.badgeText, { color: c.fg }]}>{STATUS_LABEL[status]}</Text>
+      <Text style={[styles.badgeText, { color: c.fg }]}>{t(STATUS_LABEL[status])}</Text>
     </View>
   );
 }
@@ -129,18 +130,24 @@ export function OfflineBanner({
 }) {
   if (online && waiting === 0) return null;
   const time = savedAt
-    ? new Date(savedAt).toLocaleTimeString('pt-MZ', { hour: '2-digit', minute: '2-digit' })
+    ? new Date(savedAt).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' })
     : null;
   return (
     <View style={styles.banner} accessibilityRole="alert">
       <Icon name={online ? 'upload-cloud' : 'wifi-off'} color="#93370D" />
       <View style={{ flex: 1, gap: 2 }}>
-        <Text style={styles.bannerTitle}>{online ? 'Sending your changes…' : 'No connection'}</Text>
+        <Text style={styles.bannerTitle}>{online ? t('Sending your changes…') : t('No connection')}</Text>
         <Text style={styles.bannerText}>
-          {!online && (time ? `Showing jobs saved at ${time}. ` : 'Showing jobs saved on the phone. ')}
+          {!online &&
+            (time ? t('Showing jobs saved at {0}. ', { 0: time }) : t('Showing jobs saved on the phone. '))}
           {waiting > 0
-            ? `${waiting} ${waiting === 1 ? 'change' : 'changes'} saved on the phone, sent automatically when there is signal.`
-            : 'You can keep working; changes are sent when there is signal.'}
+            ? t(
+                waiting === 1
+                  ? '{0} change saved on the phone, sent automatically when there is signal.'
+                  : '{0} changes saved on the phone, sent automatically when there is signal.',
+                { 0: waiting }
+              )
+            : t('You can keep working; changes are sent when there is signal.')}
         </Text>
       </View>
     </View>
@@ -164,26 +171,26 @@ export function TabBar({
   ];
   return (
     <View style={styles.tabBar} accessibilityRole="tablist">
-      {tabs.map((t) => {
-        const active = t.key === current;
+      {tabs.map((tab) => {
+        const active = tab.key === current;
         const color = active ? colors.brandText : colors.muted;
         return (
           <Pressable
-            key={t.key}
+            key={tab.key}
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
-            onPress={() => onChange(t.key)}
+            onPress={() => onChange(tab.key)}
             style={styles.tab}
           >
             <View>
-              <Icon name={t.icon} size={24} color={color} />
-              {t.key === 'me' && badge > 0 && (
+              <Icon name={tab.icon} size={24} color={color} />
+              {tab.key === 'me' && badge > 0 && (
                 <View style={styles.tabBadge}>
                   <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>{badge}</Text>
                 </View>
               )}
             </View>
-            <Text style={{ color, fontWeight: active ? '700' : '500', fontSize: 13 }}>{t.label}</Text>
+            <Text style={{ color, fontWeight: active ? '700' : '500', fontSize: 13 }}>{t(tab.label)}</Text>
           </Pressable>
         );
       })}
@@ -197,11 +204,27 @@ export function timeLeft(dueAt: string | null): { text: string; late: boolean } 
   const minutes = Math.round((new Date(dueAt).getTime() - Date.now()) / 60_000);
   const abs = Math.abs(minutes);
   const text = abs >= 60 ? `${Math.floor(abs / 60)} h${abs % 60 ? ` ${abs % 60} min` : ''}` : `${abs} min`;
-  return minutes < 0 ? { text: `${text} late`, late: true } : { text: `${text} left`, late: false };
+  return minutes < 0
+    ? { text: t('{0} late', { 0: text }), late: true }
+    : { text: t('{0} left', { 0: text }), late: false };
+}
+
+/** "3 min ago", "2 h ago". */
+export function ago(iso: string): string {
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
+  if (minutes < 1) return t('just now');
+  return minutes < 60 ? t('{0} min ago', { 0: minutes }) : t('{0} h ago', { 0: Math.floor(minutes / 60) });
+}
+
+/** "350 m", "1.8 km" (with the decimal sign of the language). */
+export function distanceText(m: number): string {
+  return m < 1000
+    ? `${Math.round(m / 10) * 10} m`
+    : `${(m / 1000).toLocaleString(locale(), { maximumFractionDigits: 1 })} km`;
 }
 
 export function clock(iso: string): string {
-  return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return new Date(iso).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' });
 }
 
 export const styles = StyleSheet.create({

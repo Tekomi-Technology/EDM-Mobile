@@ -6,6 +6,7 @@ import {
   type MaterialLine,
   type MyVan,
   type SurveyReport,
+  type TeamOffer,
   type TicketDetail,
   type TicketSummary
 } from '../types';
@@ -41,6 +42,7 @@ import {
   resolveBody
 } from './engine';
 import { clearAll, deletePhoto, keepPhoto, readJson, writeJson } from './storage';
+import { t } from '../i18n';
 
 /** What a screen asks for; the provider adds the id, job code and time. */
 export type NewAction =
@@ -64,6 +66,8 @@ export type NewAction =
 interface Saved {
   me: CurrentUser | null;
   jobs: TicketSummary[];
+  /** Jobs offered to the whole team that nobody has claimed yet. */
+  offers?: TeamOffer[];
   details: Record<string, TicketDetail>;
   /** Jobs reported done today, as the server last said. */
   doneToday: number;
@@ -76,6 +80,8 @@ interface OfflineState {
   me: CurrentUser | null;
   /** My jobs as they will be once waiting changes are sent. */
   jobs: TicketSummary[];
+  /** Jobs offered to the whole team, as last fetched; claiming one needs a connection. */
+  offers: TeamOffer[];
   job: (id: string) => TicketDetail | null;
   /** Changes waiting to be sent, oldest first. */
   queue: QueuedAction[];
@@ -103,6 +109,11 @@ interface OfflineState {
   refresh: () => Promise<void>;
   refreshJob: (id: string) => Promise<void>;
   perform: (action: NewAction) => Promise<void>;
+  /**
+   * Online only: takes a job offered to the team. Resolves to false when someone else claimed it first (the job is
+   * then dropped from the list).
+   */
+  claim: (ticketId: string) => Promise<boolean>;
   keepPhoto: (uri: string) => string;
   setDuty: (onDuty: boolean) => Promise<void>;
   dismissConflict: (id: string) => void;
@@ -117,7 +128,7 @@ const RETRY_MS = 30_000;
 const REFRESH_ON_RETURN_MS = 30_000;
 
 const isOffline = (e: unknown) => e instanceof ApiRequestError && e.error.statusCode === 0;
-const messageOf = (e: unknown) => (e instanceof Error ? e.message : 'Something went wrong');
+const messageOf = (e: unknown) => (e instanceof Error ? t(e.message) : t('Something went wrong'));
 
 /**
  * Keeps the person's jobs on the phone and queues what they do, so the app works without signal.
@@ -245,20 +256,29 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
       // Send first, so what comes back already includes this person's changes.
       await sync();
       const token = await auth.accessToken();
-      const [me, jobs, today, van] = await Promise.all([
+      const [me, jobs, offers, today, van] = await Promise.all([
         api<CurrentUser>(token, '/me'),
         api<TicketSummary[]>(token, '/me/jobs'),
+        api<TeamOffer[]>(token, '/me/offers'),
         api<{ done: number }>(token, '/me/today'),
         api<MyVan>(token, '/me/van')
       ]);
-      // Keep full details of every job, so customer, address and map work offline too.
+      // Keep full details of every job (and of the jobs offered to the team), so they open offline too.
       const details: Record<string, TicketDetail> = {};
       await Promise.all(
-        jobs.map(async (j) => {
+        [...jobs, ...offers].map(async (j) => {
           details[j.id] = await api<TicketDetail>(token, `/tickets/${j.id}`);
         })
       );
-      await storeSaved({ me, jobs, details, doneToday: today.done, van, savedAt: new Date().toISOString() });
+      await storeSaved({
+        me,
+        jobs,
+        offers,
+        details,
+        doneToday: today.done,
+        van,
+        savedAt: new Date().toISOString()
+      });
       // Positions recorded while the app was closed or offline.
       await flushLocations(token).catch(() => undefined);
       setOnline(true);
@@ -302,6 +322,37 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     [storeQueue, sync, refresh]
   );
 
+  const claim = useCallback(
+    async (ticketId: string): Promise<boolean> => {
+      try {
+        const detail = await api<TicketDetail>(await auth.accessToken(), `/tickets/${ticketId}/claim`, {
+          method: 'POST'
+        });
+        const s = savedRef.current;
+        await storeSaved({ ...s, details: { ...s.details, [ticketId]: detail } });
+        await refresh();
+        return true;
+      } catch (e) {
+        if (isOffline(e))
+          throw new Error(t('Claiming a job needs a connection. Try again when you have signal.'));
+        if (
+          e instanceof ApiRequestError &&
+          (e.error.code === 'ALREADY_TAKEN' || e.error.statusCode === 404)
+        ) {
+          const s = savedRef.current;
+          const details = { ...s.details };
+          delete details[ticketId];
+          await storeSaved({ ...s, offers: (s.offers ?? []).filter((o) => o.id !== ticketId), details });
+          setError(t('Someone else has already taken this job'));
+          void refresh();
+          return false;
+        }
+        throw e;
+      }
+    },
+    [auth, storeSaved, refresh]
+  );
+
   const setDuty = useCallback(
     async (onDuty: boolean) => {
       try {
@@ -313,7 +364,9 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
         setError(null);
       } catch (e) {
         setError(
-          isOffline(e) ? 'Switching duty needs a connection. Try again when you have signal.' : messageOf(e)
+          isOffline(e)
+            ? t('Switching duty needs a connection. Try again when you have signal.')
+            : messageOf(e)
         );
       }
     },
@@ -369,7 +422,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
       try {
         return await api<T>(await auth.accessToken(), path, init);
       } catch (e) {
-        if (isOffline(e)) throw new Error('This needs a connection. Try again when you have signal.');
+        if (isOffline(e)) throw new Error(t('This needs a connection. Try again when you have signal.'));
         throw e;
       }
     },
@@ -438,6 +491,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     return {
       me: saved.me,
       jobs,
+      offers: (saved.offers ?? []).filter((o) => !jobs.some((j) => j.id === o.id)),
       job: (id) => {
         const detail = saved.details[id];
         if (!detail) return null;
@@ -462,6 +516,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
       refresh,
       refreshJob,
       perform,
+      claim,
       keepPhoto,
       setDuty,
       dismissConflict
@@ -476,6 +531,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     refresh,
     refreshJob,
     perform,
+    claim,
     setDuty,
     dismissConflict,
     locationStatus,

@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
 import { Image, Linking, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { colors } from '../config';
+import { locale, t, ticketTitle } from '../i18n';
 import type { QueuedPhoto } from '../offline/engine';
 import { useOffline, type NewAction } from '../offline/OfflineProvider';
 import {
@@ -33,11 +34,14 @@ const mapsUrl = (job: TicketDetail) =>
     ? `https://www.google.com/maps/dir/?api=1&destination=${job.location.lat},${job.location.lng}`
     : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.customer?.address ?? '')}`;
 
-/** Who gave the job: the manager's name, or "automatically" when the system assigned it. */
+/** How the job became theirs: claimed from the team's list, or sent by the manager. */
 function sentBy(job: TicketDetail): string | null {
-  const assign = [...job.events].reverse().find((e) => e.type === 'assign');
+  const assign = [...job.events].reverse().find((e) => e.type === 'assign' || e.type === 'claim');
   if (!assign) return null;
-  return assign.data.auto ? 'given to you automatically' : `sent by ${assign.actorName ?? 'your manager'}`;
+  if (assign.type === 'claim') return t('you claimed it');
+  return assign.data.auto
+    ? t('given to you automatically')
+    : t('sent by {0}', { 0: assign.actorName ?? t('your manager') });
 }
 
 function QuickActions({ job }: { job: TicketDetail }) {
@@ -48,7 +52,7 @@ function QuickActions({ job }: { job: TicketDetail }) {
           <Button
             kind="soft"
             icon="phone"
-            label="Call customer"
+            label={t('Call customer')}
             onPress={() => void Linking.openURL(`tel:${job.customer!.phone}`)}
           />
         </View>
@@ -57,7 +61,7 @@ function QuickActions({ job }: { job: TicketDetail }) {
         <Button
           kind="soft"
           icon="navigation"
-          label="Open in maps"
+          label={t('Open in maps')}
           onPress={() => void Linking.openURL(mapsUrl(job))}
         />
       </View>
@@ -94,7 +98,7 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
     try {
       await work();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong');
+      setError(e instanceof Error ? e.message : t('Something went wrong'));
     } finally {
       setBusy(false);
     }
@@ -105,7 +109,7 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
 
   const submitReason = () =>
     run(async () => {
-      if (reason.trim().length < 3) throw new Error('Write a short reason.');
+      if (reason.trim().length < 3) throw new Error(t('Write a short reason.'));
       if (asking === 'decline') {
         await offline.perform({ kind: 'decline', ticketId: id, reason: reason.trim() });
         onBack();
@@ -116,45 +120,41 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
       setReason('');
     });
 
-  const takePhoto = (signedForm = false) =>
+  const takePhoto = () =>
     run(async () => {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) throw new Error('Allow camera access in the phone settings to add photos.');
+      if (!permission.granted) throw new Error(t('Allow camera access in the phone settings to add photos.'));
       const shot = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.6 });
       if (shot.canceled || !shot.assets[0]) return;
       const asset = shot.assets[0];
       const localUri = offline.keepPhoto(asset.uri);
-      if (signedForm) setInstallation((d) => ({ ...d, signedFormPhoto: photos.length }));
       setPhotos((p) => [...p, { localUri, fileName: asset.fileName ?? `photo-${Date.now()}.jpg` }]);
     });
 
-  const sendCode = async () => {
-    let ok = false;
-    await run(async () => {
-      await offline.sendHandoverCode(id);
-      ok = true;
-    });
-    return ok;
-  };
-
   const askForHelp = (kind: Parameters<typeof offline.askForHelp>[0]['kind'] | null, message: string) =>
     run(async () => {
-      if (!kind) throw new Error('Choose what kind of help you need.');
-      if (message.length < 3) throw new Error('Write what you need.');
+      if (!kind) throw new Error(t('Choose what kind of help you need.'));
+      if (message.length < 3) throw new Error(t('Write what you need.'));
       await offline.askForHelp({ kind, message, ticketId: id });
       setHelpOpen(false);
       setHelpSent(true);
     });
 
+  /** Online only: whoever claims a team job first has it; if someone was quicker, back to the list. */
+  const claim = () =>
+    run(async () => {
+      if (!(await offline.claim(id))) onBack();
+    });
+
   const finish = () =>
     run(async () => {
-      if (!note.trim()) throw new Error('Write a short note about what you did.');
+      if (!note.trim()) throw new Error(t('Write a short note about what you did.'));
       const action: NewAction = { kind: 'resolve', ticketId: id, note: note.trim(), photos, materials };
       if (job?.type === 'new_customer_survey') {
-        if (!survey.result) throw new Error('Choose the result of the survey.');
+        if (!survey.result) throw new Error(t('Choose the result of the survey.'));
         const distance = survey.distance.trim() ? Number(survey.distance) : undefined;
         if (distance !== undefined && !(Number.isInteger(distance) && distance >= 0)) {
-          throw new Error('Write the distance in whole metres.');
+          throw new Error(t('Write the distance in whole metres.'));
         }
         action.materials = [];
         action.survey = {
@@ -166,16 +166,11 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
         };
       }
       if (job?.type === 'new_connection') {
-        if (installation.meterNumber.trim().length < 3) throw new Error('Write the meter number.');
-        if (installation.signedFormPhoto === null && installation.code.length !== 4) {
-          throw new Error('Enter the 4-digit code from the customer, or take a photo of the signed form.');
-        }
+        if (installation.meterNumber.trim().length < 3) throw new Error(t('Write the meter number.'));
+        if (photos.length === 0) throw new Error(t('Take a photo of the installed meter.'));
         action.installation = {
           meterNumber: installation.meterNumber.trim(),
-          sealNumber: installation.sealNumber.trim() || undefined,
-          ...(installation.signedFormPhoto !== null
-            ? { signedFormPhoto: installation.signedFormPhoto }
-            : { handoverCode: installation.code })
+          sealNumber: installation.sealNumber.trim() || undefined
         };
       }
       await offline.perform(action);
@@ -195,10 +190,10 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
           style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
         >
           <Icon name="chevron-left" />
-          <Text style={{ fontSize: 17, color: colors.text }}>My jobs</Text>
+          <Text style={{ fontSize: 17, color: colors.text }}>{t('My jobs')}</Text>
         </Pressable>
         <Text style={styles.body}>
-          This job is not saved on the phone yet. Open it once while you have signal.
+          {t('This job is not saved on the phone yet. Open it once while you have signal.')}
         </Text>
       </View>
     );
@@ -212,26 +207,28 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
       : [...job.events].reverse().find((e) => e.type === 'hold')?.data.reason;
   const by = sentBy(job);
   const unfinished = ['assigned', 'accepted', 'in_progress', 'on_hold'].includes(job.status);
+  // Offered to the whole team and not claimed yet.
+  const offered = job.allowedActions.includes('claim');
 
   const reasonBox = asking && (
     <Card>
       <Text style={styles.cardTitle}>
-        {asking === 'decline' ? "Why can't you take it?" : 'Why are you pausing?'}
+        {asking === 'decline' ? t("Why can't you take it?") : t('Why are you pausing?')}
       </Text>
       <Text style={styles.label}>
         {asking === 'decline'
-          ? 'The job goes to someone else on duty, or back to your manager.'
-          : 'For example: waiting for material, unsafe to work, customer not at home.'}
+          ? t('The job is offered to the rest of your team, or goes back to your manager.')
+          : t('For example: waiting for material, unsafe to work, customer not at home.')}
       </Text>
       <TextInput value={reason} onChangeText={setReason} multiline style={styles.input} autoFocus />
       <Button
-        label={asking === 'decline' ? 'Give the job back' : 'Pause work'}
+        label={asking === 'decline' ? t('Give the job back') : t('Pause work')}
         busy={busy}
         onPress={() => void submitReason()}
       />
       <Button
         kind="secondary"
-        label="Never mind"
+        label={t('Never mind')}
         onPress={() => {
           setAsking(null);
           setReason('');
@@ -250,9 +247,9 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
             style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 6 }}
           >
             <Icon name="chevron-left" size={24} />
-            <Text style={{ fontSize: 17, color: colors.text }}>My jobs</Text>
+            <Text style={{ fontSize: 17, color: colors.text }}>{t('My jobs')}</Text>
           </Pressable>
-          {job.status === 'assigned' ? (
+          {offered ? (
             <View
               style={{
                 backgroundColor: colors.brandSoft,
@@ -261,15 +258,34 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
                 paddingVertical: 5
               }}
             >
-              <Text style={{ color: colors.brandText, fontWeight: '700' }}>New job</Text>
+              <Text style={{ color: colors.brandText, fontWeight: '700' }}>
+                {t('Waiting for someone of the team')}
+              </Text>
+            </View>
+          ) : job.status === 'assigned' ? (
+            <View
+              style={{
+                backgroundColor: colors.brandSoft,
+                borderRadius: 14,
+                paddingHorizontal: 12,
+                paddingVertical: 5
+              }}
+            >
+              <Text style={{ color: colors.brandText, fontWeight: '700' }}>{t('New job')}</Text>
             </View>
           ) : (
             <Badge status={job.status} />
           )}
         </View>
-        <Text style={styles.title}>{job.title}</Text>
+        <Text style={styles.title}>{ticketTitle(job.title)}</Text>
         <Text style={[styles.label, { fontSize: 15 }]}>
-          {[job.code, TYPE_LABEL[job.type], by].filter(Boolean).join(' · ')}
+          {[
+            job.code,
+            t(TYPE_LABEL[job.type]),
+            offered && job.offer ? t('told {0} people of the team', { 0: job.offer.notified.length }) : by
+          ]
+            .filter(Boolean)
+            .join(' · ')}
         </Text>
       </View>
 
@@ -277,7 +293,7 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
         <OfflineBanner online={offline.online} savedAt={offline.savedAt} waiting={waiting.length} />
         <ErrorText message={error} />
 
-        {unfinished && left && (
+        {(unfinished || offered) && left && (
           <View
             style={{
               flexDirection: 'row',
@@ -291,10 +307,10 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
             <Icon name="clock" size={24} color={left.late ? '#912018' : colors.text} />
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 17, fontWeight: '700', color: left.late ? '#912018' : colors.text }}>
-                {left.late ? `Already ${left.text}` : left.text}
+                {left.late ? t('Already {0}', { 0: left.text }) : left.text}
               </Text>
               {left.late && job.status === 'assigned' && (
-                <Text style={{ color: '#912018' }}>Please go as soon as you can</Text>
+                <Text style={{ color: '#912018' }}>{t('Please go as soon as you can')}</Text>
               )}
             </View>
           </View>
@@ -309,19 +325,42 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
                   job.network?.elementName ??
                   job.planned?.element ??
                   job.areaName ??
-                  'No address'}
+                  t('No address')}
               </Text>
               {job.areaName && <Text style={styles.label}>{job.areaName}</Text>}
             </View>
           </View>
-          {unfinished && <QuickActions job={job} />}
+          {(unfinished || offered) && <QuickActions job={job} />}
         </Card>
+
+        {offered && (
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: 10,
+              alignItems: 'flex-start',
+              backgroundColor: '#EFF4FF',
+              borderRadius: 14,
+              padding: 14
+            }}
+          >
+            <Icon name="info" size={18} color="#1849A9" />
+            <Text style={{ flex: 1, color: '#1849A9', fontSize: 15, lineHeight: 21 }}>
+              {t(
+                'This job was offered to the whole team {0}. Whoever claims it first goes; the others need not go.',
+                {
+                  0: job.teamName ?? ''
+                }
+              )}
+            </Text>
+          </View>
+        )}
 
         {unfinished && job.status !== 'assigned' && !asking && !helpOpen && (
           <Button
             kind="soft"
             icon="life-buoy"
-            label={helpSent ? 'Help asked. Ask again' : 'Ask the office for help'}
+            label={helpSent ? t('Help asked. Ask again') : t('Ask the office for help')}
             onPress={() => setHelpOpen(true)}
           />
         )}
@@ -341,30 +380,32 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
             }}
           >
             <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: '#12B76A' }} />
-            <Text style={{ color: '#067647', fontWeight: '700' }}>Sharing your location</Text>
+            <Text style={{ color: '#067647', fontWeight: '700' }}>{t('Sharing your location')}</Text>
           </View>
         )}
 
         {job.network && (
           <Card>
-            <Text style={styles.label}>Network</Text>
+            <Text style={styles.label}>{t('Network')}</Text>
             <Text style={styles.cardTitle}>
-              {job.network.elementName ?? job.network.elementCode ?? 'Reported by phone'}
+              {job.network.elementName ?? job.network.elementCode ?? t('Reported by phone')}
             </Text>
             {job.network.customersAffected !== null && (
               <Text style={styles.body}>
-                About {job.network.customersAffected.toLocaleString('en')} customers without power
+                {t('About {0} customers without power', {
+                  0: job.network.customersAffected.toLocaleString(locale())
+                })}
               </Text>
             )}
             {job.network.alarms.map((a) => (
               <Text key={a.id} style={[styles.body, a.clearedAt ? { color: colors.muted } : null]}>
                 • {a.alarmType} · {a.elementCode}
-                {a.clearedAt ? ' (cleared)' : ''}
+                {a.clearedAt ? ` (${t('cleared')})` : ''}
               </Text>
             ))}
             {job.network.alarms.length > 0 && job.network.activeAlarms === 0 && (
               <Text style={{ color: '#067647', fontWeight: '700' }}>
-                The NMS says every alarm has cleared.
+                {t('The NMS says every alarm has cleared.')}
               </Text>
             )}
             <Text style={[styles.body, { fontStyle: 'italic' }]}>{job.description}</Text>
@@ -374,10 +415,10 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
         {job.planned && (
           <Card>
             <Text style={styles.label}>
-              {job.planned.kind === 'network_change' ? 'Planned network change' : 'Planned maintenance'}
+              {job.planned.kind === 'network_change' ? t('Planned network change') : t('Planned maintenance')}
             </Text>
             <Text style={styles.cardTitle}>
-              {new Date(job.planned.scheduledStart).toLocaleString('en-GB', {
+              {new Date(job.planned.scheduledStart).toLocaleString(locale(), {
                 weekday: 'short',
                 day: 'numeric',
                 month: 'short',
@@ -388,7 +429,7 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
             </Text>
             {job.planned.element && <Text style={styles.body}>{job.planned.element}</Text>}
             <Text style={{ color: job.planned.outage ? colors.late : colors.muted, fontWeight: '700' }}>
-              {job.planned.outage ? 'Power is cut during the work' : 'No power cut'}
+              {job.planned.outage ? t('Power is cut during the work') : t('No power cut')}
             </Text>
             <Text style={styles.body}>{job.description}</Text>
           </Card>
@@ -396,23 +437,31 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
 
         {job.customer && (
           <Card>
-            <Text style={styles.label}>Customer</Text>
+            <Text style={styles.label}>{t('Customer')}</Text>
             <Text style={styles.cardTitle}>
               {job.customer.fullName}
-              {job.customer.contractNo ? ` · contract ${job.customer.contractNo}` : ' · new customer'}
+              {job.customer.contractNo
+                ? ` · ${t('contract {0}', { 0: job.customer.contractNo })}`
+                : ` · ${t('new customer')}`}
             </Text>
             {!!job.newCustomer?.requestedLoadKw && (
-              <Text style={styles.body}>Load asked for: {job.newCustomer.requestedLoadKw} kW</Text>
+              <Text style={styles.body}>
+                {t('Load asked for: {0} kW', { 0: job.newCustomer.requestedLoadKw })}
+              </Text>
             )}
             {job.newCustomer?.survey && (
               <>
-                <Text style={styles.label}>From the survey {job.newCustomer.surveyTicket?.code ?? ''}</Text>
+                <Text style={styles.label}>
+                  {t('From the survey {0}', { 0: job.newCustomer.surveyTicket?.code ?? '' })}
+                </Text>
                 {!!job.newCustomer.survey.nearestElement && (
                   <Text style={styles.body}>
-                    Connect from {job.newCustomer.survey.nearestElement}
                     {job.newCustomer.survey.distanceToNetworkM !== null
-                      ? `, ${job.newCustomer.survey.distanceToNetworkM} m away`
-                      : ''}
+                      ? t('Connect from {0}, {1} m away', {
+                          0: job.newCustomer.survey.nearestElement,
+                          1: job.newCustomer.survey.distanceToNetworkM
+                        })
+                      : t('Connect from {0}', { 0: job.newCustomer.survey.nearestElement })}
                   </Text>
                 )}
                 {job.newCustomer.survey.estimatedMaterials.map((m) => (
@@ -429,34 +478,26 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
         {job.status === 'in_progress' && !asking && (
           <Card>
             <Text style={styles.cardTitle}>
-              {job.type === 'new_customer_survey' ? 'Survey report' : 'Finish job'}
+              {job.type === 'new_customer_survey' ? t('Survey report') : t('Finish job')}
             </Text>
             {job.type === 'new_customer_survey' && (
               <SurveyForm draft={survey} onChange={setSurvey} van={offline.van} />
             )}
             {job.type === 'new_connection' && (
-              <InstallationForm
-                draft={installation}
-                onChange={setInstallation}
-                online={offline.online}
-                phone={job.customer?.phone ?? null}
-                onSendCode={sendCode}
-                onPhotoForm={() => void takePhoto(true)}
-                busy={busy}
-              />
+              <InstallationForm draft={installation} onChange={setInstallation} />
             )}
             {job.type !== 'new_customer_survey' && (
               <MaterialsPicker
                 van={offline.van}
-                title="Material used"
+                title={t('Material used')}
                 lines={materials}
                 onChange={setMaterials}
               />
             )}
             <Text style={styles.label}>
               {job.type === 'new_customer_survey'
-                ? 'Notes for the office'
-                : 'What did you find and what did you do?'}
+                ? t('Notes for the office')
+                : t('What did you find and what did you do?')}
             </Text>
             <TextInput
               value={note}
@@ -464,8 +505,8 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
               multiline
               placeholder={
                 job.type === 'new_customer_survey'
-                  ? 'e.g. Customer home, wall ready for the meter box.'
-                  : 'e.g. Service cable burnt at pole P-4471. Replaced 12 m of cable.'
+                  ? t('e.g. Customer home, wall ready for the meter box.')
+                  : t('e.g. Service cable burnt at pole P-4471. Replaced 12 m of cable.')
               }
               style={styles.input}
             />
@@ -476,7 +517,7 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
                     key={p.localUri}
                     source={{ uri: p.localUri }}
                     style={{ width: 84, height: 84, borderRadius: 12 }}
-                    accessibilityLabel="Photo of the work"
+                    accessibilityLabel={t('Photo of the work')}
                   />
                 ))}
               </View>
@@ -484,16 +525,16 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
             <Button
               kind="secondary"
               icon="camera"
-              label="Take a photo"
+              label={t('Take a photo')}
               busy={busy}
-              onPress={() => void takePhoto(false)}
+              onPress={() => void takePhoto()}
             />
           </Card>
         )}
 
         {job.status === 'on_hold' && (
           <Card style={{ backgroundColor: colors.brandSoft, borderColor: '#FBE3C8' }}>
-            <Text style={styles.cardTitle}>Work is paused</Text>
+            <Text style={styles.cardTitle}>{t('Work is paused')}</Text>
             {typeof holdReason === 'string' && <Text style={styles.body}>{holdReason}</Text>}
           </Card>
         )}
@@ -501,43 +542,61 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
           <Card style={{ backgroundColor: colors.brandSoft, borderColor: '#FBE3C8' }}>
             <Text style={styles.body}>
               {waiting.length > 0
-                ? 'Saved on the phone. It is sent with your photos as soon as there is signal.'
+                ? t('Saved on the phone. It is sent with your photos as soon as there is signal.')
                 : job.type === 'new_customer_survey'
-                  ? 'Thank you. The report goes to Sales, who contact the customer.'
+                  ? t('Thank you. The report goes to Sales, who contact the customer.')
                   : job.type === 'new_connection'
-                    ? 'Thank you. Sales switch on the service and close the job.'
-                    : 'Thank you. The Call Center will call the customer to confirm. If the power is still off, the job comes back to your team.'}
+                    ? t('Thank you. The office checks the connection with the customer and closes the job.')
+                    : t(
+                        'Thank you. The Call Center will call the customer to confirm. If the power is still off, the job comes back to your team.'
+                      )}
             </Text>
           </Card>
         )}
         {job.status === 'cancelled' && (
           <Card style={{ backgroundColor: colors.brandSoft, borderColor: '#FBE3C8' }}>
-            <Text style={styles.body}>This job was cancelled. There is no need to go.</Text>
+            <Text style={styles.body}>{t('This job was cancelled. There is no need to go.')}</Text>
           </Card>
         )}
         {reasonBox}
       </ScrollView>
 
+      {offered && (
+        <View style={styles.footer}>
+          <Button label={t('Claim this job')} busy={busy} onPress={() => void claim()} />
+          <Text style={[styles.label, { textAlign: 'center' }]}>
+            {t('Once claimed, the job is yours and shows as accepted.')}
+          </Text>
+        </View>
+      )}
       {!asking && unfinished && (
         <View style={styles.footer}>
           {job.status === 'assigned' && (
             <>
               <Button
-                label="Accept and go"
+                label={t('Accept and go')}
                 busy={busy}
                 onPress={() => void act({ kind: 'accept', ticketId: id })}
               />
-              <Button kind="secondary" label="I can't take this job" onPress={() => setAsking('decline')} />
+              <Button
+                kind="secondary"
+                label={t("I can't take this job")}
+                onPress={() => setAsking('decline')}
+              />
             </>
           )}
           {job.status === 'accepted' && (
             <>
               <Button
-                label="I have arrived"
+                label={t('I have arrived')}
                 busy={busy}
                 onPress={() => void act({ kind: 'start', ticketId: id })}
               />
-              <Button kind="secondary" label="I can't take this job" onPress={() => setAsking('decline')} />
+              <Button
+                kind="secondary"
+                label={t("I can't take this job")}
+                onPress={() => setAsking('decline')}
+              />
             </>
           )}
           {job.status === 'in_progress' && (
@@ -545,21 +604,26 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
               <Button
                 label={
                   job.type === 'new_customer_survey'
-                    ? 'Send survey report'
+                    ? t('Send survey report')
                     : job.type === 'new_connection'
-                      ? 'Connection done'
-                      : 'Problem fixed'
+                      ? t('Connection done')
+                      : t('Problem fixed')
                 }
                 icon="check"
                 busy={busy}
                 onPress={() => void finish()}
               />
-              <Button kind="secondary" icon="pause" label="Pause work" onPress={() => setAsking('hold')} />
+              <Button
+                kind="secondary"
+                icon="pause"
+                label={t('Pause work')}
+                onPress={() => setAsking('hold')}
+              />
             </>
           )}
           {job.status === 'on_hold' && (
             <Button
-              label="Resume work"
+              label={t('Resume work')}
               icon="play"
               busy={busy}
               onPress={() => void act({ kind: 'resume', ticketId: id })}

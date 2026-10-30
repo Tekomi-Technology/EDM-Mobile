@@ -7,6 +7,8 @@ import { ACTION_LABEL } from '../offline/engine';
 import { useOffline } from '../offline/OfflineProvider';
 import { Button, Card, ErrorText, OfflineBanner, styles } from '../ui';
 import { HELP_LABEL } from './FinishForms';
+import { locale, t } from '../i18n';
+import { LanguagePicker } from './LanguagePicker';
 
 const HELP_STATUS = {
   new: 'Waiting for the office',
@@ -28,7 +30,7 @@ function MyHelpRequests() {
     try {
       await work();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong');
+      setError(e instanceof Error ? e.message : t('Something went wrong'));
     } finally {
       setBusy(false);
     }
@@ -37,7 +39,7 @@ function MyHelpRequests() {
   const reply = (id: string) =>
     run(async () => {
       const body = replies[id]?.trim();
-      if (!body) throw new Error('Write a reply first.');
+      if (!body) throw new Error(t('Write a reply first.'));
       await offline.replyToHelp(id, body);
       setReplies((r) => ({ ...r, [id]: '' }));
       setItems(await offline.helpRequests());
@@ -45,18 +47,18 @@ function MyHelpRequests() {
 
   return (
     <Card>
-      <Text style={styles.cardTitle}>My help requests</Text>
+      <Text style={styles.cardTitle}>{t('My help requests')}</Text>
       <ErrorText message={error} />
       {items === null ? (
         <Button
           kind="soft"
           icon="life-buoy"
-          label="Show answers from the office"
+          label={t('Show answers from the office')}
           busy={busy}
           onPress={() => void load()}
         />
       ) : items.length === 0 ? (
-        <Text style={styles.label}>You have not asked for help recently.</Text>
+        <Text style={styles.label}>{t('You have not asked for help recently.')}</Text>
       ) : (
         items.map((h) => (
           <View
@@ -64,30 +66,30 @@ function MyHelpRequests() {
             style={{ gap: 4, paddingVertical: 6, borderTopWidth: 1, borderColor: colors.border }}
           >
             <Text style={styles.body}>
-              {HELP_LABEL[h.kind]}
+              {t(HELP_LABEL[h.kind])}
               {h.ticket ? ` · ${h.ticket.code}` : ''}
             </Text>
             <Text style={{ color: h.status === 'solved' ? '#067647' : colors.brandText, fontWeight: '700' }}>
-              {HELP_STATUS[h.status]}
+              {t(HELP_STATUS[h.status])}
             </Text>
             {h.messages.map((m) => (
               <Text key={m.id} style={[styles.label, m.fromField ? null : { color: colors.text }]}>
-                {m.fromField ? 'You' : m.authorName}: {m.body}
+                {m.fromField ? t('You') : m.authorName}: {m.body}
               </Text>
             ))}
             {h.status !== 'solved' && (
               <>
                 <TextInput
-                  accessibilityLabel="Reply"
+                  accessibilityLabel={t('Reply')}
                   value={replies[h.id] ?? ''}
                   onChangeText={(t) => setReplies((r) => ({ ...r, [h.id]: t }))}
-                  placeholder="Reply"
+                  placeholder={t('Reply')}
                   style={styles.input}
                 />
                 <Button
                   kind="secondary"
                   icon="send"
-                  label="Send reply"
+                  label={t('Send reply')}
                   busy={busy}
                   onPress={() => void reply(h.id)}
                 />
@@ -97,7 +99,13 @@ function MyHelpRequests() {
         ))
       )}
       {items !== null && (
-        <Button kind="secondary" icon="refresh-cw" label="Refresh" busy={busy} onPress={() => void load()} />
+        <Button
+          kind="secondary"
+          icon="refresh-cw"
+          label={t('Refresh')}
+          busy={busy}
+          onPress={() => void load()}
+        />
       )}
     </Card>
   );
@@ -112,13 +120,16 @@ export function MeScreen() {
   const signOut = () => {
     if (queue.length === 0) return void auth.signOut();
     Alert.alert(
-      'Changes not sent yet',
-      `${queue.length} ${queue.length === 1 ? 'change has' : 'changes have'} not reached the office. If you sign out now, ${
-        queue.length === 1 ? 'it is' : 'they are'
-      } lost.`,
+      t('Changes not sent yet'),
+      t(
+        queue.length === 1
+          ? '{0} change has not reached the office. If you sign out now, it is lost.'
+          : '{0} changes have not reached the office. If you sign out now, they are lost.',
+        { 0: queue.length }
+      ),
       [
-        { text: 'Stay signed in', style: 'cancel' },
-        { text: 'Sign out anyway', style: 'destructive', onPress: () => void auth.signOut() }
+        { text: t('Stay signed in'), style: 'cancel' },
+        { text: t('Sign out anyway'), style: 'destructive', onPress: () => void auth.signOut() }
       ]
     );
   };
@@ -126,10 +137,10 @@ export function MeScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <Text style={styles.title}>{me?.fullName ?? 'Me'}</Text>
+        <Text style={styles.title}>{me?.fullName ?? t('Me')}</Text>
         <Text style={styles.label}>
           {me?.username}
-          {me?.teamName ? ` · Team ${me.teamName}` : ''}
+          {me?.teamName ? ` · ${t('Team {0}', { 0: me.teamName })}` : ''}
         </Text>
       </View>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
@@ -139,15 +150,15 @@ export function MeScreen() {
           <Card>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.cardTitle}>{me.onDuty ? 'On duty' : 'Off duty'}</Text>
+                <Text style={styles.cardTitle}>{me.onDuty ? t('On duty') : t('Off duty')}</Text>
                 <Text style={styles.label}>
                   {me.onDuty
-                    ? 'New jobs in your area come to you automatically.'
-                    : 'Switch on when your shift starts to receive jobs.'}
+                    ? t('New jobs in your area come to you automatically.')
+                    : t('Switch on when your shift starts to receive jobs.')}
                 </Text>
               </View>
               <Switch
-                accessibilityLabel="On duty"
+                accessibilityLabel={t('On duty')}
                 value={me.onDuty}
                 disabled={offline.busy}
                 onValueChange={(v) => void offline.setDuty(v)}
@@ -157,19 +168,21 @@ export function MeScreen() {
           </Card>
         )}
         <Card>
-          <Text style={styles.cardTitle}>Location</Text>
+          <Text style={styles.cardTitle}>{t('Location')}</Text>
           <Text style={styles.label}>
             {offline.locationStatus === 'on'
-              ? 'Shared with your team while you are on duty, also with the screen off. It stops when you go off duty.'
+              ? t(
+                  'Shared with your team while you are on duty, also with the screen off. It stops when you go off duty.'
+                )
               : offline.locationStatus === 'denied'
-                ? 'Not allowed. Open the phone settings and allow location “all the time” for EDM Field.'
-                : 'Not shared now. It starts when you go on duty.'}
+                ? t('Not allowed. Open the phone settings and allow location “all the time” for EDM Field.')
+                : t('Not shared now. It starts when you go on duty.')}
           </Text>
           {me?.onDuty && offline.locationStatus !== 'on' && (
             <Button
               kind="secondary"
               icon="map-pin"
-              label={offline.locationStatus === 'denied' ? 'Open phone settings' : 'Allow location'}
+              label={offline.locationStatus === 'denied' ? t('Open phone settings') : t('Allow location')}
               onPress={() =>
                 void (offline.locationStatus === 'denied' ? Linking.openSettings() : offline.enableLocation())
               }
@@ -178,9 +191,9 @@ export function MeScreen() {
         </Card>
         {offline.van?.vehicle && (
           <Card>
-            <Text style={styles.cardTitle}>My van · {offline.van.vehicle.plate}</Text>
+            <Text style={styles.cardTitle}>{t('My van · {0}', { 0: offline.van.vehicle.plate })}</Text>
             {offline.van.lines.length === 0 ? (
-              <Text style={styles.label}>Nothing in the van. Ask your manager for material.</Text>
+              <Text style={styles.label}>{t('Nothing in the van. Ask your manager for material.')}</Text>
             ) : (
               offline.van.lines.map((l) => (
                 <View
@@ -195,35 +208,48 @@ export function MeScreen() {
               ))
             )}
             <Text style={styles.label}>
-              As the office last saw it. Material you use is taken off when the job closes.
+              {t('As the office last saw it. Material you use is taken off when the job closes.')}
             </Text>
           </Card>
         )}
         <MyHelpRequests />
         <Card>
-          <Text style={styles.cardTitle}>Waiting to be sent</Text>
+          <Text style={styles.cardTitle}>{t('Waiting to be sent')}</Text>
           {queue.length === 0 ? (
-            <Text style={styles.label}>Everything you did has reached the office.</Text>
+            <Text style={styles.label}>{t('Everything you did has reached the office.')}</Text>
           ) : (
             <>
               {queue.map((a) => (
                 <Text key={a.id} style={styles.body}>
-                  • {ACTION_LABEL[a.kind][0]!.toUpperCase() + ACTION_LABEL[a.kind].slice(1)} {a.ticketCode} at{' '}
-                  {new Date(a.occurredAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                  •{' '}
+                  {t('{0} {1} at {2}', {
+                    0: t(ACTION_LABEL[a.kind])[0]!.toUpperCase() + t(ACTION_LABEL[a.kind]).slice(1),
+                    1: a.ticketCode,
+                    2: new Date(a.occurredAt).toLocaleTimeString(locale(), {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })
+                  })}
                 </Text>
               ))}
               <Button
                 kind="soft"
                 icon="upload-cloud"
-                label="Send now"
+                label={t('Send now')}
                 busy={offline.busy}
                 onPress={() => void offline.sendNow()}
               />
             </>
           )}
         </Card>
-        <Button kind="secondary" icon="log-out" label="Sign out" onPress={signOut} />
-        <Text style={[styles.label, { textAlign: 'center', marginTop: 8 }]}>EDM Field · version 1.0</Text>
+        <Card>
+          <Text style={styles.cardTitle}>{t('Language')}</Text>
+          <LanguagePicker />
+        </Card>
+        <Button kind="secondary" icon="log-out" label={t('Sign out')} onPress={signOut} />
+        <Text style={[styles.label, { textAlign: 'center', marginTop: 8 }]}>
+          {t('EDM Field · version 1.0')}
+        </Text>
       </ScrollView>
     </View>
   );
