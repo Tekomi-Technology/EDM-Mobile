@@ -13,6 +13,11 @@ Expo SDK 58 · React Native 0.88 · TypeScript. The server (API, web, database) 
 - The EDM Tasks API running: see the EDM-Task-Management README
 - On the phone: Expo Go, or a development build for push notifications
 
+`expo-font` is held at 58.0.10 in `package.json`, and `expo install` is told to leave it alone. Expo ships it
+already compiled for iOS. Version 58.0.11 was compiled against a newer `expo-modules-core` than the one `expo`
+58.0.19 brings, so the iOS app closed at launch with "Symbol not found". When you update `expo`, update `expo-font`
+with it, and check the new build opens on an iPhone before sending it to the App Store.
+
 ## Run the app on a phone
 
 1. Phone and computer on the same Wi-Fi. Find your computer's LAN address (e.g. `192.168.1.20`).
