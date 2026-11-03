@@ -1,4 +1,4 @@
-# EDM Field (mobile app)
+# EDM Service (mobile app)
 
 The app field staff use for EDM Tasks: their jobs, accept / start / pause / finish, photos, materials from the van,
 new customer surveys and connections, help from the back office, and location sharing while on duty. It works

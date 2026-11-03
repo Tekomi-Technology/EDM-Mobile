@@ -264,7 +264,7 @@ export interface VehicleView {
   itemsOnBoard: number;
 }
 
-/** The field staff member's van and what is in it (EDM Field app). */
+/** The field staff member's van and what is in it (EDM Service app). */
 export interface MyVan {
   vehicle: VehicleView | null;
   lines: StockLine[];

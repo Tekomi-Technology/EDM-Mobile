@@ -2,7 +2,7 @@ import type { HelpRequestView } from '../types';
 import { useState } from 'react';
 import { Alert, Linking, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 import { useAuth } from '../auth';
-import { colors } from '../config';
+import { colors, PRIVACY_URL } from '../config';
 import { ACTION_LABEL } from '../offline/engine';
 import { useOffline } from '../offline/OfflineProvider';
 import { Button, Card, ErrorText, OfflineBanner, styles } from '../ui';
@@ -143,7 +143,11 @@ export function MeScreen() {
           {me?.teamName ? ` · ${t('Team {0}', { 0: me.teamName })}` : ''}
         </Text>
       </View>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 16, gap: 12 }}
+        automaticallyAdjustKeyboardInsets
+        keyboardDismissMode="interactive"
+      >
         <OfflineBanner online={offline.online} savedAt={offline.savedAt} waiting={queue.length} />
         <ErrorText message={offline.error} />
         {me && (
@@ -153,8 +157,8 @@ export function MeScreen() {
                 <Text style={styles.cardTitle}>{me.onDuty ? t('On duty') : t('Off duty')}</Text>
                 <Text style={styles.label}>
                   {me.onDuty
-                    ? t('New jobs in your area come to you automatically.')
-                    : t('Switch on when your shift starts to receive jobs.')}
+                    ? t('The office sees you are working and suggests you first.')
+                    : t("Switch on when your shift starts. You still get your team's jobs while off duty.")}
                 </Text>
               </View>
               <Switch
@@ -172,10 +176,10 @@ export function MeScreen() {
           <Text style={styles.label}>
             {offline.locationStatus === 'on'
               ? t(
-                  'Shared with your team while you are on duty, also with the screen off. It stops when you go off duty.'
+                  'Shared with your team and the office while you are on duty, also with the screen off. It stops when you go off duty.'
                 )
               : offline.locationStatus === 'denied'
-                ? t('Not allowed. Open the phone settings and allow location “all the time” for EDM Field.')
+                ? t('Not allowed. Open the phone settings and allow location “all the time” for EDM Service.')
                 : t('Not shared now. It starts when you go on duty.')}
           </Text>
           {me?.onDuty && offline.locationStatus !== 'on' && (
@@ -246,9 +250,15 @@ export function MeScreen() {
           <Text style={styles.cardTitle}>{t('Language')}</Text>
           <LanguagePicker />
         </Card>
+        <Button
+          kind="secondary"
+          icon="shield"
+          label={t('Privacy policy')}
+          onPress={() => void Linking.openURL(PRIVACY_URL)}
+        />
         <Button kind="secondary" icon="log-out" label={t('Sign out')} onPress={signOut} />
         <Text style={[styles.label, { textAlign: 'center', marginTop: 8 }]}>
-          {t('EDM Field · version 1.0')}
+          {t('EDM Service · version 1.0')}
         </Text>
       </ScrollView>
     </View>

@@ -182,13 +182,15 @@ export const vi: Record<string, string> = {
   'Stay signed in': 'Ở lại',
   'Sign out anyway': 'Vẫn đăng xuất',
   Me: 'Tôi',
-  'New jobs in your area come to you automatically.': 'Việc mới trong khu vực sẽ tự giao cho bạn.',
-  'Switch on when your shift starts to receive jobs.': 'Bật khi vào ca để nhận việc.',
+  'The office sees you are working and suggests you first.':
+    'Văn phòng thấy bạn đang làm việc và ưu tiên gợi ý bạn.',
+  "Switch on when your shift starts. You still get your team's jobs while off duty.":
+    'Bật khi vào ca. Khi nghỉ trực bạn vẫn nhận được việc của đội.',
   Location: 'Vị trí',
-  'Shared with your team while you are on duty, also with the screen off. It stops when you go off duty.':
-    'Được chia sẻ với đội khi bạn đang trực, kể cả khi tắt màn hình. Dừng chia sẻ khi bạn nghỉ trực.',
-  'Not allowed. Open the phone settings and allow location “all the time” for EDM Field.':
-    'Chưa được phép. Hãy mở cài đặt điện thoại và cho EDM Field dùng vị trí "luôn luôn".',
+  'Shared with your team and the office while you are on duty, also with the screen off. It stops when you go off duty.':
+    'Được chia sẻ với đội và văn phòng khi bạn đang trực, kể cả khi tắt màn hình. Dừng chia sẻ khi bạn nghỉ trực.',
+  'Not allowed. Open the phone settings and allow location “all the time” for EDM Service.':
+    'Chưa được phép. Hãy mở cài đặt điện thoại và cho EDM Service dùng vị trí "luôn luôn".',
   'Not shared now. It starts when you go on duty.': 'Hiện không chia sẻ. Sẽ bắt đầu khi bạn bật trực.',
   'My van · {0}': 'Xe của tôi · {0}',
   'Nothing in the van. Ask your manager for material.': 'Xe đang trống. Hãy xin vật tư từ quản lý.',
@@ -199,7 +201,8 @@ export const vi: Record<string, string> = {
   '{0} {1} at {2}': '{0} {1} lúc {2}',
   'Send now': 'Gửi ngay',
   Language: 'Ngôn ngữ',
-  'EDM Field · version 1.0': 'EDM Field · phiên bản 1.0',
+  'EDM Service · version 1.0': 'EDM Service · phiên bản 1.0',
+  'Privacy policy': 'Chính sách bảo mật',
   New: 'Mới',
   'New for you': 'Việc mới cho bạn',
   'On the way': 'Đang đến',
@@ -237,6 +240,9 @@ export const vi: Record<string, string> = {
   resuming: 'làm tiếp',
   finishing: 'báo xong',
   declining: 'trả việc',
+  '{0} {1} was not saved: {2}.': '{0} {1} chưa được lưu: {2}.',
+  'the job was given to someone else': 'việc đã được giao cho người khác',
+  'the job was cancelled': 'việc đã bị hủy',
   Jobs: 'Việc',
   home: 'hộ gia đình',
   shop: 'cửa hàng',

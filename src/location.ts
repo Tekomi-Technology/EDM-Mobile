@@ -90,7 +90,7 @@ export async function startTracking(askAgain = false): Promise<LocationStatus> {
     pausesUpdatesAutomatically: false,
     showsBackgroundLocationIndicator: true,
     foregroundService: {
-      notificationTitle: 'EDM Field',
+      notificationTitle: 'EDM Service',
       notificationBody: t('Sharing your location while you are on duty'),
       notificationColor: '#F39B3A'
     }

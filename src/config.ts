@@ -3,6 +3,8 @@
  * e.g. EXPO_PUBLIC_API_URL=http://192.168.1.20:3000 (see "Run the app on a phone" in README.md).
  */
 export const API_URL = `${process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000'}/api`;
+/** Public page, also linked from the App Store listing. */
+export const PRIVACY_URL = 'https://edm.tekomi.vn/privacy.html';
 export const colors = {
   brand: '#F39B3A',
   brandInk: '#2B1A07',

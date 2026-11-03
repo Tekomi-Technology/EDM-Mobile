@@ -118,7 +118,8 @@ describe('sending the queue when back online', () => {
     expect(result.conflicts).toEqual([
       expect.objectContaining({
         ticketCode: 'TK-t1',
-        message: 'Your starting work on TK-t1 was not saved: the job was cancelled.'
+        reason: 'the job was cancelled',
+        message: 'Starting work on TK-t1 was not saved: the job was cancelled.'
       })
     ]);
   });

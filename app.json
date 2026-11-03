@@ -1,14 +1,17 @@
 {
   "expo": {
-    "name": "EDM Field",
+    "name": "EDM Service",
     "slug": "edm-field",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "mz.co.edm.field"
+      "supportsTablet": false,
+      "bundleIdentifier": "mz.co.edm.field",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,18 +21,33 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "mz.co.edm.field"
+      "package": "mz.co.edm.field",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
       [
         "expo-image-picker",
         {
-          "cameraPermission": "EDM Field uses the camera to take photos of the work you have done.",
-          "photosPermission": "EDM Field attaches photos of the work to the job."
+          "cameraPermission": "EDM Service uses the camera to take photos of the work you have done.",
+          "photosPermission": false,
+          "microphonePermission": false
         }
       ],
       [
@@ -41,14 +59,23 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "EDM Field shares your location with your team while you are on duty, so the nearest person gets urgent jobs. It stops when you go off duty.",
-          "locationWhenInUsePermission": "EDM Field shares your location with your team while you are on duty.",
+          "locationAlwaysAndWhenInUsePermission": "EDM Service shares your location with your team and the office while you are on duty, so the nearest person gets urgent jobs. It stops when you go off duty.",
+          "locationWhenInUsePermission": "EDM Service shares your location with your team and the office while you are on duty.",
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true,
-          "isIosBackgroundLocationEnabled": true
+          "isIosBackgroundLocationEnabled": true,
+          "locationAlwaysPermission": "EDM Service shares your location with your team and the office while you are on duty, so the nearest person gets urgent jobs. It stops when you go off duty.",
+          "motionUsagePermission": false
         }
-      ]
+      ],
+      "expo-font"
     ],
-    "scheme": "edm"
+    "scheme": "edm",
+    "extra": {
+      "eas": {
+        "projectId": "a6e50b33-1869-4977-a636-b7f68fb6ffd1"
+      }
+    },
+    "owner": "huutu7165"
   }
 }

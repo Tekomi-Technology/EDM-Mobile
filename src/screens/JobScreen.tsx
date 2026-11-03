@@ -289,7 +289,11 @@ export function JobScreen({ id, onBack }: { id: string; onBack: () => void }) {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 24 }}
+        automaticallyAdjustKeyboardInsets
+        keyboardDismissMode="interactive"
+      >
         <OfflineBanner online={offline.online} savedAt={offline.savedAt} waiting={waiting.length} />
         <ErrorText message={error} />
 

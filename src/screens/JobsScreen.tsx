@@ -4,6 +4,7 @@ import { Image, Linking, Pressable, RefreshControl, ScrollView, Text, View } fro
 import { EDM_EMBLEM } from '../assets';
 import { colors } from '../config';
 import { locale, t, ticketTitle } from '../i18n';
+import { ACTION_LABEL, type Conflict } from '../offline/engine';
 import { useOffline } from '../offline/OfflineProvider';
 import {
   ago,
@@ -133,7 +134,7 @@ export function JobsScreen({ onOpen }: { onOpen: (id: string) => void }) {
         <ErrorText message={offline.error} />
         {offline.conflicts.map((c) => (
           <Card key={c.id} style={{ backgroundColor: '#FEF3F2', borderColor: '#FECDCA' }}>
-            <Text style={styles.body}>{c.message}</Text>
+            <Text style={styles.body}>{conflictText(c)}</Text>
             <Pressable accessibilityRole="button" onPress={() => offline.dismissConflict(c.id)}>
               <Text style={{ color: colors.late, fontWeight: '700' }}>{t('OK')}</Text>
             </Pressable>
@@ -266,6 +267,17 @@ export function JobsScreen({ onOpen }: { onOpen: (id: string) => void }) {
       </ScrollView>
     </View>
   );
+}
+
+/** Something done offline that the office could not take, in the phone's language. */
+function conflictText(c: Conflict): string {
+  if (!c.reason) return c.message;
+  const doing = t(ACTION_LABEL[c.kind]);
+  return t('{0} {1} was not saved: {2}.', {
+    0: doing[0]!.toUpperCase() + doing.slice(1),
+    1: c.ticketCode,
+    2: t(c.reason)
+  });
 }
 
 /** A job offered to the whole team: whoever claims it first has it. */

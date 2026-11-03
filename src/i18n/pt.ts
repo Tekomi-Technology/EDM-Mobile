@@ -185,15 +185,15 @@ export const pt: Record<string, string> = {
   'Stay signed in': 'Manter sessão',
   'Sign out anyway': 'Sair mesmo assim',
   Me: 'Eu',
-  'New jobs in your area come to you automatically.':
-    'Os novos trabalhos da sua área chegam a si automaticamente.',
-  'Switch on when your shift starts to receive jobs.':
-    'Ligue quando o seu turno começar para receber trabalhos.',
+  'The office sees you are working and suggests you first.':
+    'O escritório vê que está a trabalhar e sugere-o primeiro.',
+  "Switch on when your shift starts. You still get your team's jobs while off duty.":
+    'Ligue quando começar o turno. Fora de serviço continua a receber os trabalhos da equipa.',
   Location: 'Localização',
-  'Shared with your team while you are on duty, also with the screen off. It stops when you go off duty.':
-    'Partilhada com a sua equipa enquanto está de serviço, mesmo com o ecrã desligado. Para quando sai de serviço.',
-  'Not allowed. Open the phone settings and allow location “all the time” for EDM Field.':
-    'Não permitida. Abra as definições do telemóvel e permita a localização "sempre" para o EDM Field.',
+  'Shared with your team and the office while you are on duty, also with the screen off. It stops when you go off duty.':
+    'Partilhada com a sua equipa e o escritório enquanto está de serviço, mesmo com o ecrã desligado. Para quando sai de serviço.',
+  'Not allowed. Open the phone settings and allow location “all the time” for EDM Service.':
+    'Não permitida. Abra as definições do telemóvel e permita a localização "sempre" para o EDM Service.',
   'Not shared now. It starts when you go on duty.': 'Não partilhada agora. Começa quando entrar de serviço.',
   'My van · {0}': 'A minha viatura · {0}',
   'Nothing in the van. Ask your manager for material.': 'Nada na viatura. Peça material ao seu chefe.',
@@ -204,7 +204,8 @@ export const pt: Record<string, string> = {
   '{0} {1} at {2}': '{0} {1} às {2}',
   'Send now': 'Enviar agora',
   Language: 'Idioma',
-  'EDM Field · version 1.0': 'EDM Field · versão 1.0',
+  'EDM Service · version 1.0': 'EDM Service · versão 1.0',
+  'Privacy policy': 'Política de privacidade',
   New: 'Novo',
   'New for you': 'Novo para si',
   'On the way': 'A caminho',
@@ -242,6 +243,9 @@ export const pt: Record<string, string> = {
   resuming: 'retomar',
   finishing: 'terminar',
   declining: 'recusar',
+  '{0} {1} was not saved: {2}.': '{0} {1}: não foi guardado, {2}.',
+  'the job was given to someone else': 'o trabalho foi dado a outra pessoa',
+  'the job was cancelled': 'o trabalho foi cancelado',
   Jobs: 'Trabalhos',
   home: 'casa',
   shop: 'loja',

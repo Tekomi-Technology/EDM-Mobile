@@ -56,7 +56,7 @@ function Frame({ subtitle, children }: { subtitle: string; children: React.React
             resizeMode="contain"
             accessibilityLabel={t('Electricidade de Moçambique, E.P.')}
           />
-          <Text style={[styles.title, { fontSize: 30 }]}>EDM Field</Text>
+          <Text style={[styles.title, { fontSize: 30 }]}>EDM Service</Text>
           <Text style={[styles.label, { fontSize: 16, textAlign: 'center' }]}>{subtitle}</Text>
           <LanguagePicker />
         </View>

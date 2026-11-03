@@ -64,6 +64,9 @@ export interface Conflict {
   id: string;
   ticketCode: string;
   kind: ActionKind;
+  /** Why, in English: shown in the phone's language when it has a translation (a server message may not). */
+  reason?: string;
+  /** In English; conflicts saved by older versions have only this. */
   message: string;
 }
 
@@ -191,11 +194,13 @@ export async function syncQueue(queue: QueuedAction[], deps: SyncDeps): Promise<
           : server!.status === 'cancelled'
             ? 'the job was cancelled'
             : messageOf(err);
+        const doing = ACTION_LABEL[action.kind];
         conflicts.push({
           id: action.id,
           ticketCode: action.ticketCode,
           kind: action.kind,
-          message: `Your ${ACTION_LABEL[action.kind]} ${action.ticketCode} was not saved: ${why}.`
+          reason: why,
+          message: `${doing[0]!.toUpperCase()}${doing.slice(1)} ${action.ticketCode} was not saved: ${why}.`
         });
         remaining = remaining.filter((a) => a.ticketId !== action.ticketId);
       }

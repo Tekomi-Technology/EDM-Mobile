@@ -1,0 +1,22 @@
+{
+  "cli": {
+    "version": ">= 25.3.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "production": {
+      "autoIncrement": true,
+      "node": "24.19.0",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://edm.tekomi.vn"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6829660304"
+      }
+    }
+  }
+}
