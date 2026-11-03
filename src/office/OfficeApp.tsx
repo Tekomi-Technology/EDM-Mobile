@@ -8,6 +8,8 @@ import { CreateSheet } from './CreateSheet';
 import { officeApi } from './officeApi';
 import { OfficeTabBar } from './OfficeTabBar';
 import { Fab, OfficeHeader } from './officeUi';
+import { HelpScreen } from './HelpScreen';
+import { HomeScreen } from './HomeScreen';
 import { createChoicesFor, type CreateChoice, type OfficeLayout, type OfficeTab } from './shell';
 
 /** What every office screen may open: a ticket, a help request, or a new ticket. */
@@ -70,17 +72,16 @@ export function OfficeApp({ layout }: { layout: OfficeLayout }) {
     create: (choice) => setCovering({ kind: 'create', choice }),
     refreshUnread: () => setUnreadRound((n) => n + 1)
   };
+  if (covering?.kind === 'help') {
+    return <HelpScreen id={covering.id} onBack={() => setCovering(null)} onOpenTicket={nav.openTicket} />;
+  }
   if (covering) {
-    return (
-      <Placeholder
-        title={covering.kind === 'create' ? 'Create' : covering.kind === 'help' ? 'Help request' : 'Ticket'}
-      />
-    );
+    return <Placeholder title={covering.kind === 'create' ? 'Create' : 'Ticket'} />;
   }
 
   const body =
     tab === 'home' ? (
-      <Placeholder title={layout === 'team_manager' ? 'My team' : 'Overview'} />
+      <HomeScreen nav={nav} />
     ) : tab === 'tickets' ? (
       <Placeholder title="Tickets" />
     ) : tab === 'map' ? (
