@@ -10,6 +10,7 @@ import { OfficeTabBar } from './OfficeTabBar';
 import { Fab, OfficeHeader } from './officeUi';
 import { HelpScreen } from './HelpScreen';
 import { HomeScreen } from './HomeScreen';
+import { TicketScreen } from './TicketScreen';
 import { TicketsScreen } from './TicketsScreen';
 import { createChoicesFor, type CreateChoice, type OfficeLayout, type OfficeTab } from './shell';
 
@@ -76,8 +77,11 @@ export function OfficeApp({ layout }: { layout: OfficeLayout }) {
   if (covering?.kind === 'help') {
     return <HelpScreen id={covering.id} onBack={() => setCovering(null)} onOpenTicket={nav.openTicket} />;
   }
+  if (covering?.kind === 'ticket') {
+    return <TicketScreen id={covering.id} onBack={() => setCovering(null)} />;
+  }
   if (covering) {
-    return <Placeholder title={covering.kind === 'create' ? 'Create' : 'Ticket'} />;
+    return <Placeholder title="Create" />;
   }
 
   const body =
