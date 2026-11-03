@@ -1,12 +1,113 @@
-import { Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { AppState, View } from 'react-native';
+import { useAuth } from '../auth';
 import { colors } from '../config';
-import type { Layout } from '../roles';
+import { t } from '../i18n';
+import { styles as ui } from '../ui';
+import { CreateSheet } from './CreateSheet';
+import { officeApi } from './officeApi';
+import { OfficeTabBar } from './OfficeTabBar';
+import { Fab, OfficeHeader } from './officeUi';
+import { createChoicesFor, type CreateChoice, type OfficeLayout, type OfficeTab } from './shell';
 
-/** The screens for team managers, operations supervisors and administrators. */
-export function OfficeApp({ layout }: { layout: Exclude<Layout, 'field'> }) {
+/** What every office screen may open: a ticket, a help request, or a new ticket. */
+export interface OfficeNav {
+  layout: OfficeLayout;
+  openTicket: (id: string) => void;
+  openHelp: (id: string) => void;
+  create: (choice: CreateChoice) => void;
+  /** The number of unread notifications changed (read on the Notifications tab). */
+  refreshUnread: () => void;
+}
+
+type Covering =
+  { kind: 'ticket'; id: string } | { kind: 'help'; id: string } | { kind: 'create'; choice: CreateChoice };
+
+/** Shown until a screen is built (replaced task by task). */
+function Placeholder({ title }: { title: string }) {
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
-      <Text>{layout}</Text>
+    <View style={ui.screen}>
+      <OfficeHeader title={t(title)} />
+    </View>
+  );
+}
+
+/** The screens for team managers, operations supervisors and administrators; they need a connection. */
+export function OfficeApp({ layout }: { layout: OfficeLayout }) {
+  const { accessToken } = useAuth();
+  const [tab, setTab] = useState<OfficeTab>('home');
+  const [covering, setCovering] = useState<Covering | null>(null);
+  const [choosing, setChoosing] = useState(false);
+  const [unread, setUnread] = useState(0);
+  const [unreadRound, setUnreadRound] = useState(0);
+
+  // Unread notifications, every minute while the app is open.
+  useEffect(() => {
+    let alive = true;
+    const check = async () => {
+      if (AppState.currentState !== 'active') return;
+      try {
+        const inbox = await officeApi.inbox(await accessToken());
+        if (alive) setUnread(inbox.unread);
+      } catch {
+        // No signal: try again next time.
+      }
+    };
+    void check();
+    const timer = setInterval(check, 60_000);
+    const sub = AppState.addEventListener('change', (s) => s === 'active' && void check());
+    return () => {
+      alive = false;
+      clearInterval(timer);
+      sub.remove();
+    };
+  }, [accessToken, unreadRound]);
+
+  const nav: OfficeNav = {
+    layout,
+    openTicket: (id) => setCovering({ kind: 'ticket', id }),
+    openHelp: (id) => setCovering({ kind: 'help', id }),
+    create: (choice) => setCovering({ kind: 'create', choice }),
+    refreshUnread: () => setUnreadRound((n) => n + 1)
+  };
+  if (covering) {
+    return (
+      <Placeholder
+        title={covering.kind === 'create' ? 'Create' : covering.kind === 'help' ? 'Help request' : 'Ticket'}
+      />
+    );
+  }
+
+  const body =
+    tab === 'home' ? (
+      <Placeholder title={layout === 'team_manager' ? 'My team' : 'Overview'} />
+    ) : tab === 'tickets' ? (
+      <Placeholder title="Tickets" />
+    ) : tab === 'map' ? (
+      <Placeholder title="Map" />
+    ) : tab === 'inbox' ? (
+      <Placeholder title="Notifications" />
+    ) : (
+      <Placeholder title="Me" />
+    );
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <View style={{ flex: 1 }}>
+        {body}
+        {(tab === 'home' || tab === 'tickets') && <Fab onPress={() => setChoosing(true)} />}
+      </View>
+      <OfficeTabBar layout={layout} current={tab} onChange={setTab} unread={unread} />
+      {choosing && (
+        <CreateSheet
+          choices={createChoicesFor(layout)}
+          onClose={() => setChoosing(false)}
+          onChoose={(c) => {
+            setChoosing(false);
+            nav.create(c);
+          }}
+        />
+      )}
     </View>
   );
 }
