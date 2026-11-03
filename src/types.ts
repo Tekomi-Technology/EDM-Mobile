@@ -319,3 +319,330 @@ export interface HelpRequestInput {
   message: string;
   ticketId?: string;
 }
+
+// ---- Office screens (team managers, operations supervisors, administrators) ----
+// Copied from EDM-Task-Management apps/api/src/contract/api-types.ts.
+
+/** A network incident in the list of the Network incidents screen. */
+export interface IncidentSummary extends TicketSummary {
+  severity: AlarmSeverity | null;
+  elementCode: string | null;
+  alarmCount: number;
+  activeAlarms: number;
+  customersAffected: number | null;
+  linkedTickets: number;
+  acknowledgedAt: string | null;
+  lastAlarmAt: string | null;
+}
+
+export type StaffState = 'on_job' | 'free' | 'offline' | 'off_duty';
+
+export interface StaffLocation {
+  lat: number;
+  lng: number;
+  accuracy: number | null;
+  at: string;
+}
+
+/** A field staff member on the live map and the Field staff screen. */
+export interface StaffLive {
+  id: string;
+  fullName: string;
+  phone: string | null;
+  teamId: string | null;
+  teamName: string | null;
+  state: StaffState;
+  location: StaffLocation | null;
+  currentJob: { id: string; code: string; title: string; status: TicketStatus } | null;
+  openJobs: number;
+  doneToday: number;
+}
+
+export interface LiveMap {
+  staff: StaffLive[];
+  tickets: MapTicket[];
+  areas: { id: string; name: string; boundary: [number, number][][][] }[];
+  updatedAt: string;
+}
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  fullName: string;
+  email: string | null;
+  phone: string | null;
+  roles: string[];
+  teamId: string | null;
+  teamName: string | null;
+  areaName: string | null;
+  status: 'active' | 'blocked' | 'cancelled';
+  onDuty: boolean;
+  /** Last time they used the system; null = has not signed in yet. */
+  lastSeenAt: string | null;
+  createdAt: string;
+}
+
+/** Number of tickets in each tab of the Tickets screen, within what the caller may see. */
+export type TicketCounts = Record<
+  'active' | 'unassigned' | 'late' | 'waiting_check' | 'closed_today' | 'incidents' | 'help',
+  number
+>;
+
+export interface Lookups {
+  areas: { id: string; name: string }[];
+  teams: { id: string; name: string; areaId: string; areaName: string }[];
+}
+
+export interface MapTicket {
+  id: string;
+  type: TicketType;
+  code: string;
+  title: string;
+  status: TicketStatus;
+  lat: number;
+  lng: number;
+  late: boolean;
+}
+
+/** Figures and lists for the Overview screen. */
+export interface Overview {
+  open: number;
+  newToday: number;
+  beingFixed: number;
+  staffOnDuty: number;
+  waitingCheck: number;
+  waitingCallCenter: number;
+  late: number;
+  attention: TicketSummary[];
+  unassigned: TicketSummary[];
+  map: MapTicket[];
+}
+
+export interface ReportTeamRow {
+  teamId: string;
+  teamName: string;
+  closed: number;
+  /** Share of tickets fixed within their time limit (null when none had one). */
+  onTimePct: number | null;
+  avgFixMinutes: number | null;
+  reopenedPct: number | null;
+}
+
+export interface ReportStaffRow {
+  userId: string;
+  fullName: string;
+  teamName: string | null;
+  fixed: number;
+  onTimePct: number | null;
+  avgFixMinutes: number | null;
+  firstTimePct: number | null;
+}
+
+export interface ReportMaterialRow {
+  itemId: string;
+  code: string;
+  name: string;
+  unit: StockUnit;
+  quantity: number;
+  tickets: number;
+}
+
+export interface Report {
+  from: string;
+  to: string;
+  /** The same KPI over the period of the same length just before. */
+  closed: number;
+  closedBefore: number;
+  onTimePct: number | null;
+  onTimeTarget: number;
+  /** Mean time to repair: ticket created → reported fixed (planned work left out). */
+  mttrMinutes: number | null;
+  /** Closed without the check ever finding the job not done. */
+  firstTimePct: number | null;
+  received: number;
+  stillOpen: number;
+  perDay: { day: string; closed: number }[];
+  byType: { type: TicketType; closed: number }[];
+  byTeam: ReportTeamRow[];
+  byStaff: ReportStaffRow[];
+  incidents: {
+    count: number;
+    avgRestoreMinutes: number | null;
+    customersAffected: number;
+    alarms: number;
+  };
+  newCustomers: {
+    surveysDone: number;
+    avgSurveyDays: number | null;
+    connectionsDone: number;
+    avgConnectionDays: number | null;
+    waitingActivation: number;
+  };
+  materials: ReportMaterialRow[];
+}
+
+export interface CustomerMatch {
+  id: string;
+  fullName: string;
+  contractNo: string | null;
+  meterNumber: string | null;
+  phone: string | null;
+  address: string;
+  location: { lat: number; lng: number } | null;
+  areaName: string | null;
+  teamName: string | null;
+  /** Tickets of this customer not finished yet, so the same problem is not entered twice. */
+  openTickets: { id: string; code: string; title: string; status: TicketStatus }[];
+}
+
+export interface TicketPreview {
+  /** The team that goes: the one chosen, or else the team covering the place. */
+  team: { id: string; name: string } | null;
+  /** The team covering the place, whatever was chosen. */
+  autoTeam: { id: string; name: string } | null;
+  areaName: string | null;
+  /** How many field staff of the team are told about it; 0: nobody is left, the team manager chooses someone. */
+  teamStaff: number;
+  priority: number;
+  slaMinutes: number;
+  dueAt: string;
+  /** An open network incident close to the customer, for "Is this the same problem?". */
+  incident: {
+    id: string;
+    code: string;
+    title: string;
+    elementName: string | null;
+    linkedCustomers: number;
+  } | null;
+  /** The SMS the caller gets: as a new job, or as part of the known incident. */
+  sms: { newJob: string; knownOutage: string | null } | null;
+}
+
+export interface InboxItem {
+  id: string;
+  title: string;
+  /** Where clicking it goes, e.g. /tickets/<id> or /help. */
+  link: string | null;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface Inbox {
+  unread: number;
+  items: InboxItem[];
+}
+
+export interface StaffMember {
+  id: string;
+  fullName: string;
+  phone: string | null;
+  onDuty: boolean;
+  openJobs: number;
+}
+
+export interface StaffSuggestion extends StaffMember {
+  /** Straight-line distance from the staff member's last known position to the ticket, in metres. */
+  distanceM: number | null;
+  /** When that position was recorded. */
+  locationAt: string | null;
+  /** Jobs they reported done today. */
+  doneToday: number;
+  /** The best choice when the office names someone: on duty, fewest unfinished jobs, nearest. */
+  bestMatch: boolean;
+}
+
+export interface WaitingSurvey {
+  ticketId: string;
+  code: string;
+  customer: { fullName: string; phone: string | null; address: string | null } | null;
+  premises: PremisesType | null;
+  supply: SupplyType | null;
+  requestedLoadKw: number | null;
+  result: SurveyResult;
+  distanceToNetworkM: number | null;
+  nearestElement: string | null;
+  worksNeeded: string | null;
+  surveyedBy: string | null;
+  surveyedAt: string | null;
+}
+
+/** Problem types a customer ticket can have (apps/api/src/contract/ticket.ts PROBLEM_TYPES). */
+export const PROBLEM_TYPES = {
+  no_power_single: { label: 'No power, one home', priority: 2 },
+  no_power_street: { label: 'No power, whole street', priority: 1 },
+  low_voltage: { label: 'Low or unstable voltage', priority: 3 },
+  prepaid_meter: { label: 'Prepaid meter problem', priority: 3 },
+  cable_down: { label: 'Cable down or danger', priority: 1 },
+  other: { label: 'Something else', priority: 3 }
+} as const;
+export type ProblemType = keyof typeof PROBLEM_TYPES;
+
+// Request bodies (apps/api/src/contract/schemas.ts).
+export interface Point {
+  lat: number;
+  lng: number;
+}
+export interface TeamChoice {
+  teamId?: string;
+  teamReason?: string;
+}
+export type OfficeTicketBody =
+  | ({
+      type: 'customer_complaint';
+      customerId: string;
+      problemType: ProblemType;
+      description: string;
+      priority?: number;
+      callerPhone?: string;
+      joinIncident?: boolean;
+    } & TeamChoice)
+  | ({
+      type: 'other';
+      title: string;
+      description: string;
+      priority: number;
+      customerId?: string;
+      address?: string;
+      location?: Point;
+      callerPhone?: string;
+    } & TeamChoice);
+export interface PlannedWorkBody {
+  kind: PlannedWorkKind;
+  title: string;
+  element: string;
+  teamId: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  outage: boolean;
+  customersAffected?: number;
+  description?: string;
+  location?: Point;
+}
+export interface Prospect {
+  fullName: string;
+  phone?: string;
+  address: string;
+  location?: Point;
+}
+export interface OfficeSurveyBody extends TeamChoice {
+  customer: Prospect;
+  premises: PremisesType;
+  supply: SupplyType;
+  requestedLoadKw?: number;
+  notes?: string;
+}
+export interface OfficeConnectionBody {
+  contractNo: string;
+  surveyTicketId?: string;
+  customer?: Prospect;
+  premises?: PremisesType;
+  supply?: SupplyType;
+  notes?: string;
+}
+export interface UserPatch {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  roles?: string[];
+  teamId?: string | null;
+}

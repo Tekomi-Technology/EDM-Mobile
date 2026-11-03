@@ -17,7 +17,7 @@ const offline = () =>
 export async function api<T>(
   token: string,
   path: string,
-  init: { method?: 'GET' | 'POST'; body?: unknown; headers?: Record<string, string> } = {}
+  init: { method?: 'GET' | 'POST' | 'PATCH'; body?: unknown; headers?: Record<string, string> } = {}
 ): Promise<T> {
   let res: Response;
   try {
