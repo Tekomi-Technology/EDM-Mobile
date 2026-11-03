@@ -1,6 +1,8 @@
+import Constants from 'expo-constants';
 import { useState } from 'react';
 import { Linking, ScrollView, Text, View } from 'react-native';
 import { APP_NAME } from '../appName';
+import { shortVersion } from '../version';
 import { useAuth } from '../auth';
 import { PRIVACY_URL } from '../config';
 import { t } from '../i18n';
@@ -78,7 +80,10 @@ export function MeScreen({ nav }: { nav: OfficeNav }) {
         />
         <Button kind="secondary" icon="log-out" label={t('Sign out')} onPress={() => void auth.signOut()} />
         <Text style={[ui.label, { textAlign: 'center', marginTop: 8 }]}>
-          {t('{app} · version 1.0', { app: APP_NAME })}
+          {t('{app} · version {version}', {
+            app: APP_NAME,
+            version: shortVersion(Constants.expoConfig?.version)
+          })}
         </Text>
       </ScrollView>
     </View>

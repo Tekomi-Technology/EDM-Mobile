@@ -204,7 +204,7 @@ export const pt: Record<string, string> = {
   '{0} {1} at {2}': '{0} {1} às {2}',
   'Send now': 'Enviar agora',
   Language: 'Idioma',
-  '{app} · version 1.0': '{app} · versão 1.0',
+  '{app} · version {version}': '{app} · versão {version}',
   'Not allowed. Open the phone settings and allow location for EDM Tasks.':
     'Não permitida. Abra as definições do telemóvel e permita a localização para o EDM Tasks.',
   'Allow location, so the office sees where you are and jobs show how far away they are. It is only shared while you are on duty.':
@@ -517,5 +517,7 @@ export const pt: Record<string, string> = {
   'Reopen {0}?': 'Reabrir {0}?',
   'It goes back to the team to be fixed again.': 'Volta para a equipa para ser reparado de novo.',
   'Text the customers of {0}?': 'Enviar SMS aos clientes de {0}?',
-  'Every customer linked to it gets an SMS.': 'Cada cliente ligado recebe um SMS.'
+  'Every customer linked to it gets an SMS.': 'Cada cliente ligado recebe um SMS.',
+  'The map is not available in this version. The list is below.':
+    'O mapa não está disponível nesta versão. A lista está em baixo.'
 };

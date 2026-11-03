@@ -1,7 +1,9 @@
+import Constants from 'expo-constants';
 import type { HelpRequestView } from '../types';
 import { useState } from 'react';
 import { Alert, Linking, Platform, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 import { APP_NAME } from '../appName';
+import { shortVersion } from '../version';
 import { useAuth } from '../auth';
 import { colors, PRIVACY_URL } from '../config';
 import { ACTION_LABEL } from '../offline/engine';
@@ -263,7 +265,10 @@ export function MeScreen() {
         />
         <Button kind="secondary" icon="log-out" label={t('Sign out')} onPress={signOut} />
         <Text style={[styles.label, { textAlign: 'center', marginTop: 8 }]}>
-          {t('{app} · version 1.0', { app: APP_NAME })}
+          {t('{app} · version {version}', {
+            app: APP_NAME,
+            version: shortVersion(Constants.expoConfig?.version)
+          })}
         </Text>
       </ScrollView>
     </View>

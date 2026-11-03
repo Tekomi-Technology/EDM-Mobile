@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Linking, Pressable, Text, View } from 'react-native';
+import Constants from 'expo-constants';
+import { FlatList, Linking, Platform, Pressable, Text, View } from 'react-native';
 import MapView, { Marker, type Region } from 'react-native-maps';
 import { colors } from '../config';
 import { t } from '../i18n';
@@ -7,8 +8,15 @@ import { Button, styles as ui } from '../ui';
 import type { OfficeNav } from './OfficeApp';
 import { officeApi } from './officeApi';
 import { LoadState, Row } from './officeUi';
+import { mapAvailable } from './mapAvailable';
 import { pinsFor, type MapFilter, type Pin } from './pins';
 import { useRemote } from './remote';
+
+/** False on an Android build made without the Google Maps key: the list only. */
+const CAN_DRAW = mapAvailable(
+  Platform.OS,
+  Constants.expoConfig?.extra as { googleMapsKey?: boolean } | undefined
+);
 
 /** Maputo, until there is something to show. */
 const START: Region = { latitude: -25.95, longitude: 32.58, latitudeDelta: 0.35, longitudeDelta: 0.35 };
@@ -63,40 +71,48 @@ export function MapScreen({ nav }: { nav: OfficeNav }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <MapView ref={map} style={{ flex: 1 }} initialRegion={START} showsUserLocation={false}>
-        {pins.map((p) => (
-          <Marker
-            key={`${p.kind}:${p.id}`}
-            coordinate={{ latitude: p.lat, longitude: p.lng }}
-            onPress={() => choose(p)}
-            tracksViewChanges={false}
-          >
-            <View
-              style={
-                p.kind === 'incident'
-                  ? {
-                      width: 0,
-                      height: 0,
-                      borderLeftWidth: 11,
-                      borderRightWidth: 11,
-                      borderBottomWidth: 19,
-                      borderLeftColor: 'transparent',
-                      borderRightColor: 'transparent',
-                      borderBottomColor: p.color
-                    }
-                  : {
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      backgroundColor: p.color,
-                      borderWidth: 2,
-                      borderColor: '#fff'
-                    }
-              }
-            />
-          </Marker>
-        ))}
-      </MapView>
+      {CAN_DRAW ? (
+        <MapView ref={map} style={{ flex: 1 }} initialRegion={START} showsUserLocation={false}>
+          {pins.map((p) => (
+            <Marker
+              key={`${p.kind}:${p.id}`}
+              coordinate={{ latitude: p.lat, longitude: p.lng }}
+              onPress={() => choose(p)}
+              tracksViewChanges={false}
+            >
+              <View
+                style={
+                  p.kind === 'incident'
+                    ? {
+                        width: 0,
+                        height: 0,
+                        borderLeftWidth: 11,
+                        borderRightWidth: 11,
+                        borderBottomWidth: 19,
+                        borderLeftColor: 'transparent',
+                        borderRightColor: 'transparent',
+                        borderBottomColor: p.color
+                      }
+                    : {
+                        width: 22,
+                        height: 22,
+                        borderRadius: 11,
+                        backgroundColor: p.color,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                      }
+                }
+              />
+            </Marker>
+          ))}
+        </MapView>
+      ) : (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <Text style={[ui.label, { textAlign: 'center' }]}>
+            {t('The map is not available in this version. The list is below.')}
+          </Text>
+        </View>
+      )}
       <View
         style={{
           position: 'absolute',
@@ -155,7 +171,7 @@ export function MapScreen({ nav }: { nav: OfficeNav }) {
           backgroundColor: colors.surface,
           borderTopLeftRadius: 18,
           borderTopRightRadius: 18,
-          maxHeight: open ? '55%' : 150,
+          maxHeight: open || !CAN_DRAW ? '70%' : 150,
           elevation: 6,
           shadowColor: '#000',
           shadowOpacity: 0.15,

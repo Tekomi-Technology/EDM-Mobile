@@ -201,7 +201,7 @@ export const vi: Record<string, string> = {
   '{0} {1} at {2}': '{0} {1} lúc {2}',
   'Send now': 'Gửi ngay',
   Language: 'Ngôn ngữ',
-  '{app} · version 1.0': '{app} · phiên bản 1.0',
+  '{app} · version {version}': '{app} · phiên bản {version}',
   'Not allowed. Open the phone settings and allow location for EDM Tasks.':
     'Chưa được phép. Hãy mở cài đặt điện thoại và cho EDM Tasks dùng vị trí.',
   'Allow location, so the office sees where you are and jobs show how far away they are. It is only shared while you are on duty.':
@@ -515,5 +515,7 @@ export const vi: Record<string, string> = {
   'Reopen {0}?': 'Mở lại {0}?',
   'It goes back to the team to be fixed again.': 'Ticket quay lại đội để sửa lại.',
   'Text the customers of {0}?': 'Nhắn tin cho khách của {0}?',
-  'Every customer linked to it gets an SMS.': 'Mọi khách hàng gộp vào đều nhận SMS.'
+  'Every customer linked to it gets an SMS.': 'Mọi khách hàng gộp vào đều nhận SMS.',
+  'The map is not available in this version. The list is below.':
+    'Bản đồ chưa có trong phiên bản này. Danh sách ở bên dưới.'
 };
