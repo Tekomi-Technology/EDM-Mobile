@@ -1,8 +1,9 @@
 # EDM Service (mobile app)
 
-The app field staff use for EDM Tasks: their jobs, accept / start / pause / finish, photos, materials from the van,
-new customer surveys and connections, help from the back office, and location sharing while on duty. It works
-offline and sends what was done when there is signal.
+The mobile app of EDM Tasks, for everyone at EDM. Field staff get their jobs: accept / start / pause / finish,
+photos, materials from the van, new customer surveys and connections, help from the office, and location sharing
+while on duty. It works offline and sends what was done when there is signal. Team managers, operations
+supervisors and administrators get the office screens (see below).
 
 Expo SDK 58 · React Native 0.88 · TypeScript. The server (API, web, database) is in the
 [EDM-Task-Management](https://github.com/Tekomi-Technology) repository; the app talks to it only through its API.
@@ -30,6 +31,23 @@ with it, and check the new build opens on an iPhone before sending it to the App
    pnpm start                # scan the QR code with Expo Go
    ```
 4. Sign in as a field staff member of the sample data, e.g. `armando.cossa` / `Edm@2026`.
+
+## Office screens
+
+After sign-in the app picks its screens from the highest role (`src/roles.ts`): admin, then operations supervisor
+(`technical_manager`), then team manager; everyone else gets the field staff screens, which are unchanged. The roles
+are kept on the phone so the right screens open without signal.
+
+- **Team manager:** My team (late jobs, jobs nobody has, help requests), the team's tickets, the team on the map,
+  notifications, and + for customer tickets and planned maintenance for their own team.
+- **Operations supervisor:** Overview (network incidents, jobs waiting for the check, late jobs, help requests), every
+  ticket, everyone on the map, and + for surveys and connections too.
+- **Administrator:** as the supervisor, plus accounts and roles in Me (change roles, block, reset a password). New
+  accounts, areas and teams, API keys and sign-in security stay on the website.
+
+Office screens need a connection; they call the same API endpoints as the website (`src/office/officeApi.ts`). They
+get no push notifications: the Notifications tab and SMS. The map uses `react-native-maps`: Apple Maps on iOS,
+Google Maps on Android with the key from the EAS environment variable `GOOGLE_MAPS_ANDROID_KEY` (`app.config.js`).
 
 ## Data formats (`src/types.ts`)
 

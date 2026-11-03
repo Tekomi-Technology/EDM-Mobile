@@ -2,15 +2,15 @@ import { useEffect, useState } from 'react';
 import { AppState, View } from 'react-native';
 import { useAuth } from '../auth';
 import { colors } from '../config';
-import { t } from '../i18n';
-import { styles as ui } from '../ui';
 import { CreateSheet } from './CreateSheet';
 import { officeApi } from './officeApi';
 import { OfficeTabBar } from './OfficeTabBar';
-import { Fab, OfficeHeader } from './officeUi';
+import { Fab } from './officeUi';
 import { HelpScreen } from './HelpScreen';
 import { HomeScreen } from './HomeScreen';
+import { InboxScreen } from './InboxScreen';
 import { MapScreen } from './MapScreen';
+import { MeScreen } from './MeScreen';
 import { CustomerTicketFlow } from './create/CustomerTicketFlow';
 import { NewCustomerFlow } from './create/NewCustomerFlow';
 import { PlannedWorkFlow } from './create/PlannedWorkFlow';
@@ -30,15 +30,6 @@ export interface OfficeNav {
 
 type Covering =
   { kind: 'ticket'; id: string } | { kind: 'help'; id: string } | { kind: 'create'; choice: CreateChoice };
-
-/** Shown until a screen is built (replaced task by task). */
-function Placeholder({ title }: { title: string }) {
-  return (
-    <View style={ui.screen}>
-      <OfficeHeader title={t(title)} />
-    </View>
-  );
-}
 
 /** The screens for team managers, operations supervisors and administrators; they need a connection. */
 export function OfficeApp({ layout }: { layout: OfficeLayout }) {
@@ -102,9 +93,9 @@ export function OfficeApp({ layout }: { layout: OfficeLayout }) {
     ) : tab === 'map' ? (
       <MapScreen nav={nav} />
     ) : tab === 'inbox' ? (
-      <Placeholder title="Notifications" />
+      <InboxScreen nav={nav} onOpenHome={() => setTab('home')} />
     ) : (
-      <Placeholder title="Me" />
+      <MeScreen nav={nav} />
     );
 
   return (
