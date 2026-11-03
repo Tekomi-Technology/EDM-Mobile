@@ -10,6 +10,7 @@ import { OfficeTabBar } from './OfficeTabBar';
 import { Fab, OfficeHeader } from './officeUi';
 import { HelpScreen } from './HelpScreen';
 import { HomeScreen } from './HomeScreen';
+import { MapScreen } from './MapScreen';
 import { CustomerTicketFlow } from './create/CustomerTicketFlow';
 import { NewCustomerFlow } from './create/NewCustomerFlow';
 import { PlannedWorkFlow } from './create/PlannedWorkFlow';
@@ -99,7 +100,7 @@ export function OfficeApp({ layout }: { layout: OfficeLayout }) {
     ) : tab === 'tickets' ? (
       <TicketsScreen nav={nav} />
     ) : tab === 'map' ? (
-      <Placeholder title="Map" />
+      <MapScreen nav={nav} />
     ) : tab === 'inbox' ? (
       <Placeholder title="Notifications" />
     ) : (
