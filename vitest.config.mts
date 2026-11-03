@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config';
 
-// Only the parts of the app that do not need React Native (src/offline/engine.ts) are tested here.
+// Plain TypeScript runs in Node here; tests of code that uses React Native or Expo mock those modules.
 export default defineConfig({
   test: { include: ['src/**/*.test.ts'], environment: 'node' }
 });

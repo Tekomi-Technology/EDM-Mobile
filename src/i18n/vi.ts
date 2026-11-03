@@ -201,7 +201,16 @@ export const vi: Record<string, string> = {
   '{0} {1} at {2}': '{0} {1} lúc {2}',
   'Send now': 'Gửi ngay',
   Language: 'Ngôn ngữ',
-  'EDM Service · version 1.0': 'EDM Service · phiên bản 1.0',
+  '{app} · version 1.0': '{app} · phiên bản 1.0',
+  'Not allowed. Open the phone settings and allow location for EDM Tasks.':
+    'Chưa được phép. Hãy mở cài đặt điện thoại và cho EDM Tasks dùng vị trí.',
+  'Allow location, so the office sees where you are and jobs show how far away they are. It is only shared while you are on duty.':
+    'Hãy cho phép dùng vị trí để văn phòng biết bạn đang ở đâu và các việc hiện khoảng cách. Vị trí chỉ được chia sẻ khi bạn đang trực.',
+  'Location while on duty': 'Vị trí khi đang trực',
+  'EDM Tasks collects your location to share it with your team and the office, suggest the nearest person for urgent jobs and show how far away jobs are, even when the app is closed or not in use. This only happens while you are on duty and stops when you go off duty.':
+    'EDM Tasks thu thập vị trí của bạn để chia sẻ với đội và văn phòng, gợi ý người gần nhất cho việc khẩn và cho biết việc cách bạn bao xa, kể cả khi ứng dụng đã đóng hoặc không được sử dụng. Việc này chỉ diễn ra khi bạn đang trực và dừng lại khi bạn hết trực.',
+  'Not now': 'Để sau',
+  Continue: 'Tiếp tục',
   'Privacy policy': 'Chính sách bảo mật',
   New: 'Mới',
   'New for you': 'Việc mới cho bạn',

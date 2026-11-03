@@ -1,6 +1,6 @@
 import type { TeamOffer, TicketSummary } from '../types';
 import { useState } from 'react';
-import { Image, Linking, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Image, Linking, Platform, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { EDM_EMBLEM } from '../assets';
 import { colors } from '../config';
 import { locale, t, ticketTitle } from '../i18n';
@@ -146,7 +146,9 @@ export function JobsScreen({ onOpen }: { onOpen: (id: string) => void }) {
             <Text style={styles.cardTitle}>{t('Location is off')}</Text>
             <Text style={styles.body}>
               {t(
-                'Allow location “all the time”, so the office sees where you are and jobs show how far away they are. It is only shared while you are on duty.'
+                Platform.OS === 'android'
+                  ? 'Allow location, so the office sees where you are and jobs show how far away they are. It is only shared while you are on duty.'
+                  : 'Allow location “all the time”, so the office sees where you are and jobs show how far away they are. It is only shared while you are on duty.'
               )}
             </Text>
             <Button

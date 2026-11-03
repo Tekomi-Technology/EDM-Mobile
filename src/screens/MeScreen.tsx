@@ -1,6 +1,7 @@
 import type { HelpRequestView } from '../types';
 import { useState } from 'react';
-import { Alert, Linking, ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import { Alert, Linking, Platform, ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import { APP_NAME } from '../appName';
 import { useAuth } from '../auth';
 import { colors, PRIVACY_URL } from '../config';
 import { ACTION_LABEL } from '../offline/engine';
@@ -179,7 +180,11 @@ export function MeScreen() {
                   'Shared with your team and the office while you are on duty, also with the screen off. It stops when you go off duty.'
                 )
               : offline.locationStatus === 'denied'
-                ? t('Not allowed. Open the phone settings and allow location “all the time” for EDM Service.')
+                ? t(
+                    Platform.OS === 'android'
+                      ? 'Not allowed. Open the phone settings and allow location for EDM Tasks.'
+                      : 'Not allowed. Open the phone settings and allow location “all the time” for EDM Service.'
+                  )
                 : t('Not shared now. It starts when you go on duty.')}
           </Text>
           {me?.onDuty && offline.locationStatus !== 'on' && (
@@ -258,7 +263,7 @@ export function MeScreen() {
         />
         <Button kind="secondary" icon="log-out" label={t('Sign out')} onPress={signOut} />
         <Text style={[styles.label, { textAlign: 'center', marginTop: 8 }]}>
-          {t('EDM Service · version 1.0')}
+          {t('{app} · version 1.0', { app: APP_NAME })}
         </Text>
       </ScrollView>
     </View>

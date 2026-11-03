@@ -25,11 +25,14 @@
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_BACKGROUND_LOCATION",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_LOCATION",
         "android.permission.POST_NOTIFICATIONS"
+      ],
+      "blockedPermissions": [
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.SYSTEM_ALERT_WINDOW"
       ]
     },
     "web": {
@@ -61,14 +64,15 @@
         {
           "locationAlwaysAndWhenInUsePermission": "EDM Service shares your location with your team and the office while you are on duty, so the nearest person gets urgent jobs. It stops when you go off duty.",
           "locationWhenInUsePermission": "EDM Service shares your location with your team and the office while you are on duty.",
-          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": false,
           "isAndroidForegroundServiceEnabled": true,
           "isIosBackgroundLocationEnabled": true,
           "locationAlwaysPermission": "EDM Service shares your location with your team and the office while you are on duty, so the nearest person gets urgent jobs. It stops when you go off duty.",
           "motionUsagePermission": false
         }
       ],
-      "expo-font"
+      "expo-font",
+      ["./plugins/with-android-app-name.js", { "name": "EDM Tasks" }]
     ],
     "scheme": "edm",
     "extra": {

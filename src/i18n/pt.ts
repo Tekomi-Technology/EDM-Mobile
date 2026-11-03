@@ -204,7 +204,16 @@ export const pt: Record<string, string> = {
   '{0} {1} at {2}': '{0} {1} às {2}',
   'Send now': 'Enviar agora',
   Language: 'Idioma',
-  'EDM Service · version 1.0': 'EDM Service · versão 1.0',
+  '{app} · version 1.0': '{app} · versão 1.0',
+  'Not allowed. Open the phone settings and allow location for EDM Tasks.':
+    'Não permitida. Abra as definições do telemóvel e permita a localização para o EDM Tasks.',
+  'Allow location, so the office sees where you are and jobs show how far away they are. It is only shared while you are on duty.':
+    'Permita a localização, para que o escritório veja onde está e os trabalhos mostrem a que distância estão. Só é partilhada enquanto está de serviço.',
+  'Location while on duty': 'Localização enquanto de serviço',
+  'EDM Tasks collects your location to share it with your team and the office, suggest the nearest person for urgent jobs and show how far away jobs are, even when the app is closed or not in use. This only happens while you are on duty and stops when you go off duty.':
+    'O EDM Tasks recolhe a sua localização para a partilhar com a sua equipa e o escritório, sugerir a pessoa mais próxima para trabalhos urgentes e mostrar a que distância estão os trabalhos, mesmo quando a aplicação está fechada ou não está a ser utilizada. Isto só acontece enquanto está de serviço e termina quando sai de serviço.',
+  'Not now': 'Agora não',
+  Continue: 'Continuar',
   'Privacy policy': 'Política de privacidade',
   New: 'Novo',
   'New for you': 'Novo para si',

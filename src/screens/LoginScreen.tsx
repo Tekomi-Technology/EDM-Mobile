@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
 import { EDM_LOGO } from '../assets';
 import { signInMessage, useAuth } from '../auth';
+import { APP_NAME } from '../appName';
 import { colors } from '../config';
 import { Button, ErrorText, Icon, styles } from '../ui';
 import { t } from '../i18n';
@@ -56,7 +57,7 @@ function Frame({ subtitle, children }: { subtitle: string; children: React.React
             resizeMode="contain"
             accessibilityLabel={t('Electricidade de Moçambique, E.P.')}
           />
-          <Text style={[styles.title, { fontSize: 30 }]}>EDM Service</Text>
+          <Text style={[styles.title, { fontSize: 30 }]}>{APP_NAME}</Text>
           <Text style={[styles.label, { fontSize: 16, textAlign: 'center' }]}>{subtitle}</Text>
           <LanguagePicker />
         </View>

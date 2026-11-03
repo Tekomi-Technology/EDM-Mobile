@@ -1,6 +1,8 @@
 import * as Location from 'expo-location';
 import * as SecureStore from 'expo-secure-store';
 import * as TaskManager from 'expo-task-manager';
+import { Alert, Platform } from 'react-native';
+import { APP_NAME } from './appName';
 import { API_URL } from './config';
 import { appendPoints, uploadPoints, type QueuedPoint } from './offline/locations';
 import { readJson, writeJson } from './offline/storage';
@@ -58,22 +60,40 @@ TaskManager.defineTask<{ locations: Location.LocationObject[] }>(TASK, async ({ 
   await flushLocations().catch(() => undefined);
 });
 
-/**
- * "All the time" is asked for once per run of the app: Android answers each request with a dialog or its settings
- * screen, which takes the person out of the app, and coming back refreshes the jobs. Asking every time would loop.
- */
+/** iOS asks for "all the time" once per run of the app; `askAgain` asks once more. */
 let askedForBackground = false;
 
+/** Google Play requires this explanation before Android's location permission dialog. */
+function explainLocation(): Promise<boolean> {
+  return new Promise((resolve) => {
+    Alert.alert(
+      t('Location while on duty'),
+      t(
+        'EDM Tasks collects your location to share it with your team and the office, suggest the nearest person for urgent jobs and show how far away jobs are, even when the app is closed or not in use. This only happens while you are on duty and stops when you go off duty.'
+      ),
+      [
+        { text: t('Not now'), style: 'cancel', onPress: () => resolve(false) },
+        { text: t('Continue'), onPress: () => resolve(true) }
+      ],
+      { cancelable: false }
+    );
+  });
+}
+
 /**
- * Starts sharing the position while on duty, also with the screen off (asks for "allow all the time").
- * Android shows a permanent notification while it runs, so staff always know. Permissions already given are not
- * asked for again; `askAgain` (the person tapping "Allow location") asks for "all the time" once more.
+ * Starts sharing the position while on duty, also with the screen off. Android keeps it running with a foreground
+ * service started while the app is open, which needs no "all the time" permission and shows a permanent notification,
+ * so staff always know. If the phone restarts, sharing resumes when the app is opened. iOS asks for "all the time".
+ * Permissions already given are not asked for again; `askAgain` is the person tapping "Allow location".
  */
 export async function startTracking(askAgain = false): Promise<LocationStatus> {
   let fg = await Location.getForegroundPermissionsAsync();
-  if (!fg.granted && fg.canAskAgain) fg = await Location.requestForegroundPermissionsAsync();
+  if (!fg.granted && fg.canAskAgain) {
+    if (Platform.OS === 'android' && !(await explainLocation())) return 'off';
+    fg = await Location.requestForegroundPermissionsAsync();
+  }
   if (!fg.granted) return 'denied';
-  if (askAgain || !askedForBackground) {
+  if (Platform.OS === 'ios' && (askAgain || !askedForBackground)) {
     askedForBackground = true;
     // Without "all the time" it still works while the app is open, so a refusal here is not fatal.
     const bg = await Location.getBackgroundPermissionsAsync().catch(() => null);
@@ -90,7 +110,7 @@ export async function startTracking(askAgain = false): Promise<LocationStatus> {
     pausesUpdatesAutomatically: false,
     showsBackgroundLocationIndicator: true,
     foregroundService: {
-      notificationTitle: 'EDM Service',
+      notificationTitle: APP_NAME,
       notificationBody: t('Sharing your location while you are on duty'),
       notificationColor: '#F39B3A'
     }
