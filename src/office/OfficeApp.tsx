@@ -10,6 +10,7 @@ import { OfficeTabBar } from './OfficeTabBar';
 import { Fab, OfficeHeader } from './officeUi';
 import { HelpScreen } from './HelpScreen';
 import { HomeScreen } from './HomeScreen';
+import { TicketsScreen } from './TicketsScreen';
 import { createChoicesFor, type CreateChoice, type OfficeLayout, type OfficeTab } from './shell';
 
 /** What every office screen may open: a ticket, a help request, or a new ticket. */
@@ -83,7 +84,7 @@ export function OfficeApp({ layout }: { layout: OfficeLayout }) {
     tab === 'home' ? (
       <HomeScreen nav={nav} />
     ) : tab === 'tickets' ? (
-      <Placeholder title="Tickets" />
+      <TicketsScreen nav={nav} />
     ) : tab === 'map' ? (
       <Placeholder title="Map" />
     ) : tab === 'inbox' ? (
