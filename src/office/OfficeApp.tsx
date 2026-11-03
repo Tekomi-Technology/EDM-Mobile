@@ -10,6 +10,9 @@ import { OfficeTabBar } from './OfficeTabBar';
 import { Fab, OfficeHeader } from './officeUi';
 import { HelpScreen } from './HelpScreen';
 import { HomeScreen } from './HomeScreen';
+import { CustomerTicketFlow } from './create/CustomerTicketFlow';
+import { NewCustomerFlow } from './create/NewCustomerFlow';
+import { PlannedWorkFlow } from './create/PlannedWorkFlow';
 import { TicketScreen } from './TicketScreen';
 import { TicketsScreen } from './TicketsScreen';
 import { createChoicesFor, type CreateChoice, type OfficeLayout, type OfficeTab } from './shell';
@@ -81,7 +84,13 @@ export function OfficeApp({ layout }: { layout: OfficeLayout }) {
     return <TicketScreen id={covering.id} onBack={() => setCovering(null)} />;
   }
   if (covering) {
-    return <Placeholder title="Create" />;
+    const done = (id: string) => setCovering({ kind: 'ticket', id });
+    const cancel = () => setCovering(null);
+    if (covering.choice === 'customer')
+      return <CustomerTicketFlow layout={layout} onCancel={cancel} onCreated={done} />;
+    if (covering.choice === 'planned')
+      return <PlannedWorkFlow layout={layout} onCancel={cancel} onCreated={done} />;
+    return <NewCustomerFlow onCancel={cancel} onCreated={done} />;
   }
 
   const body =
