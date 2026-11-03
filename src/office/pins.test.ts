@@ -57,6 +57,11 @@ describe('pinsFor: what the office map shows', () => {
     expect(pinsFor(live([old]), [], 'staff', NOW)[0]!.color).toBe('#98A2B3');
   });
 
+  it('leaves out staff who are off duty, wherever they last were', () => {
+    const home = staff('home', { state: 'off_duty' });
+    expect(pinsFor(live([home]), [], 'staff', NOW)).toEqual([]);
+  });
+
   it('leaves out staff without a position', () => {
     expect(pinsFor(live([staff('none', { location: null })]), [], 'staff', NOW)).toEqual([]);
   });

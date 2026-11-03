@@ -12,7 +12,18 @@ export function layoutFor(roles: readonly string[]): Layout {
   return 'field';
 }
 
-/** The server's answer wins; offline, the roles saved on the phone; with neither, the field app. */
-export function pickLayout(saved: readonly string[] | null, fetched: readonly string[] | null): Layout {
-  return layoutFor(fetched ?? saved ?? []);
+/**
+ * The screens to show now, or null to keep waiting. Saved roles open at once; with nothing saved the app waits for
+ * /me (so an office person never sees the field app first), and opens the field app only if /me could not be had.
+ * `settled` is true once /me has answered or failed.
+ */
+export function decideLayout(
+  saved: readonly string[] | null | undefined,
+  fetched: readonly string[] | null,
+  settled: boolean
+): Layout | null {
+  if (saved === undefined) return null;
+  if (fetched) return layoutFor(fetched);
+  if (saved) return layoutFor(saved);
+  return settled ? 'field' : null;
 }

@@ -4,6 +4,7 @@ import { useAuth } from '../auth';
 import { t } from '../i18n';
 import { Button, Card, ErrorText, styles as ui } from '../ui';
 import type { TicketAction } from './actions';
+import { askFirst } from './askFirst';
 import { homeCardsFor, homeStatsFor, type HomeCard, type HomeData } from './home';
 import type { OfficeNav } from './OfficeApp';
 import { officeApi } from './officeApi';
@@ -125,7 +126,7 @@ export function HomeScreen({ nav }: { nav: OfficeNav }) {
                       label={t(ACTION_LABEL[a])}
                       kind={i === 0 ? 'primary' : 'soft'}
                       busy={busy === `${card.id}:${a}`}
-                      onPress={() => void act(card, a)}
+                      onPress={() => askFirst(a, card.type, card.code, () => void act(card, a))}
                     />
                   ))
                 )}

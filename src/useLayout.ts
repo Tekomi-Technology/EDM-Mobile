@@ -2,7 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import { api } from './api';
 import { useAuth } from './auth';
-import { pickLayout, SAVED_ROLES_KEY, type Layout } from './roles';
+import { decideLayout, SAVED_ROLES_KEY, type Layout } from './roles';
 import type { CurrentUser } from './types';
 
 function parseRoles(raw: string | null): string[] | null {
@@ -16,12 +16,13 @@ function parseRoles(raw: string | null): string[] | null {
 
 /**
  * The screens for the person signed in: decided at once from the roles saved on the phone, then from /me.
- * `layout` is null only while the saved roles are being read.
+ * `layout` is null (a spinner) while nothing is known yet: see decideLayout.
  */
 export function useLayout(): { layout: Layout | null; me: CurrentUser | null } {
   const auth = useAuth();
   const [saved, setSaved] = useState<string[] | null | undefined>(undefined);
   const [me, setMe] = useState<CurrentUser | null>(null);
+  const [settled, setSettled] = useState(false);
 
   useEffect(() => {
     SecureStore.getItemAsync(SAVED_ROLES_KEY)
@@ -41,6 +42,8 @@ export function useLayout(): { layout: Layout | null; me: CurrentUser | null } {
         await SecureStore.setItemAsync(SAVED_ROLES_KEY, JSON.stringify(current.roles));
       } catch {
         // No signal: keep the saved roles.
+      } finally {
+        if (alive) setSettled(true);
       }
     })();
     return () => {
@@ -48,7 +51,7 @@ export function useLayout(): { layout: Layout | null; me: CurrentUser | null } {
     };
   }, [accessToken, signedIn]);
 
-  return { layout: saved === undefined ? null : pickLayout(saved, me?.roles ?? null), me };
+  return { layout: decideLayout(saved, me?.roles ?? null, settled), me };
 }
 
 /** Forgets the saved roles, when the person signs out. */

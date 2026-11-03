@@ -507,5 +507,15 @@ export const pt: Record<string, string> = {
   '{0} open': '{0} abertos',
   '{0} open jobs': '{0} trabalhos abertos',
   '{0} unread': '{0} por ler',
-  Code: 'Código'
+  Code: 'Código',
+  'Your account has no role yet. Ask an administrator.':
+    'A sua conta ainda não tem função. Fale com um administrador.',
+  'Close {0}?': 'Fechar {0}?',
+  'The customer tickets linked to it are closed too, and each caller gets an SMS.':
+    'Os tickets de clientes ligados também são fechados, e cada pessoa que ligou recebe um SMS.',
+  'The ticket is closed as fixed.': 'O ticket é fechado como reparado.',
+  'Reopen {0}?': 'Reabrir {0}?',
+  'It goes back to the team to be fixed again.': 'Volta para a equipa para ser reparado de novo.',
+  'Text the customers of {0}?': 'Enviar SMS aos clientes de {0}?',
+  'Every customer linked to it gets an SMS.': 'Cada cliente ligado recebe um SMS.'
 };

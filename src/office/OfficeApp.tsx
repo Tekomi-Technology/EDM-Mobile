@@ -6,6 +6,7 @@ import { CreateSheet } from './CreateSheet';
 import { officeApi } from './officeApi';
 import { OfficeTabBar } from './OfficeTabBar';
 import { Fab } from './officeUi';
+import { leaveFieldMode } from './leaveField';
 import { HelpScreen } from './HelpScreen';
 import { HomeScreen } from './HomeScreen';
 import { InboxScreen } from './InboxScreen';
@@ -33,12 +34,19 @@ type Covering =
 
 /** The screens for team managers, operations supervisors and administrators; they need a connection. */
 export function OfficeApp({ layout }: { layout: OfficeLayout }) {
-  const { accessToken } = useAuth();
+  const { accessToken, setBeforeSignOut } = useAuth();
   const [tab, setTab] = useState<OfficeTab>('home');
   const [covering, setCovering] = useState<Covering | null>(null);
   const [choosing, setChoosing] = useState(false);
   const [unread, setUnread] = useState(0);
   const [unreadRound, setUnreadRound] = useState(0);
+
+  // Nothing of the field app keeps running here, now or after signing out.
+  useEffect(() => {
+    void leaveFieldMode();
+    setBeforeSignOut(leaveFieldMode);
+    return () => setBeforeSignOut(null);
+  }, [setBeforeSignOut]);
 
   // Unread notifications, every minute while the app is open.
   useEffect(() => {

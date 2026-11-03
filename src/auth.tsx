@@ -72,6 +72,7 @@ export function signInMessage(err: unknown): string {
   };
   if (code === 'OFFLINE') return t('No connection. Sign in once you have signal.');
   if (code === 'INVALID_CREDENTIALS') return t('Wrong username or password.');
+  if (code === 'NO_ROLE') return t('Your account has no role yet. Ask an administrator.');
   if (code === 'ACCOUNT_LOCKED' || code === 'TOO_MANY_ATTEMPTS')
     return t('Too many wrong passwords. Try again in {0} min.', { 0: details?.minutes ?? 15 });
   if (code === 'WRONG_PASSWORD') return t('The temporary password is wrong.');

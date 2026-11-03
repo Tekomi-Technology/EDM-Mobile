@@ -505,5 +505,15 @@ export const vi: Record<string, string> = {
   '{0} open': '{0} đang mở',
   '{0} open jobs': '{0} việc đang mở',
   '{0} unread': '{0} chưa đọc',
-  Code: 'Mã'
+  Code: 'Mã',
+  'Your account has no role yet. Ask an administrator.':
+    'Tài khoản của bạn chưa có quyền. Hãy liên hệ Admin.',
+  'Close {0}?': 'Đóng {0}?',
+  'The customer tickets linked to it are closed too, and each caller gets an SMS.':
+    'Các ticket khách hàng gộp vào cũng được đóng, và mỗi người gọi đều nhận SMS.',
+  'The ticket is closed as fixed.': 'Ticket được đóng là đã sửa xong.',
+  'Reopen {0}?': 'Mở lại {0}?',
+  'It goes back to the team to be fixed again.': 'Ticket quay lại đội để sửa lại.',
+  'Text the customers of {0}?': 'Nhắn tin cho khách của {0}?',
+  'Every customer linked to it gets an SMS.': 'Mọi khách hàng gộp vào đều nhận SMS.'
 };

@@ -6,9 +6,11 @@ import { t } from '../i18n';
 import type { TicketDetail } from '../types';
 import { Badge, Button, Card, ErrorText, TYPE_LABEL, ago, clock, styles as ui, timeLeft } from '../ui';
 import { actionsFor, type TicketAction } from './actions';
+import { askFirst } from './askFirst';
 import { ActionSheet, SHEET_ACTIONS, type SheetAction } from './ActionSheets';
 import { officeApi } from './officeApi';
 import { LoadState, OfficeHeader, Pill } from './officeUi';
+import { eventNote } from './history';
 import { describeError, useRemote } from './remote';
 import { problemLabel } from './TicketsScreen';
 
@@ -78,8 +80,13 @@ export function TicketScreen({ id, onBack }: { id: string; onBack: () => void })
     ticket.reload();
   }
 
-  async function press(action: TicketAction) {
+  function press(action: TicketAction) {
     if ((SHEET_ACTIONS as TicketAction[]).includes(action)) return setSheet(action as SheetAction);
+    const k = ticket.data!;
+    askFirst(action, k.type, k.code, () => void run(action));
+  }
+
+  async function run(action: TicketAction) {
     setBusy(action);
     setError(null);
     try {
@@ -115,7 +122,7 @@ export function TicketScreen({ id, onBack }: { id: string; onBack: () => void })
                   label={t(ACTION_LABEL[a])}
                   kind={i === 0 ? 'primary' : 'soft'}
                   busy={busy === a}
-                  onPress={() => void press(a)}
+                  onPress={() => press(a)}
                 />
               ))}
             </ScrollView>
@@ -177,9 +184,7 @@ export function TicketScreen({ id, onBack }: { id: string; onBack: () => void })
                   <Text style={ui.body}>
                     {e.actorName ?? t('System')} {t(EVENT_LABEL[e.type] ?? e.type)}
                   </Text>
-                  {typeof e.data.text === 'string' || typeof e.data.reason === 'string' ? (
-                    <Text style={ui.label}>{String(e.data.text ?? e.data.reason)}</Text>
-                  ) : null}
+                  {eventNote(e.data) ? <Text style={ui.label}>{eventNote(e.data)}</Text> : null}
                 </Card>
               ))}
             {pane === 'photos' &&

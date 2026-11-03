@@ -16,12 +16,12 @@ const STALE_MS = 15 * 60_000;
 
 /**
  * Points on the office map (mockup A). Staff: green when free, blue on a job, grey when the position is old;
- * staff without a position are left out. Incidents red, other tickets orange (both placed where the ticket is).
+ *  staff off duty or without a position are left out. Incidents red, other tickets orange (both placed where the ticket is).
  */
 export function pinsFor(live: LiveMap, incidents: IncidentSummary[], filter: MapFilter, now: Date): Pin[] {
   if (filter === 'staff') {
     return live.staff.flatMap((s): Pin[] => {
-      if (!s.location) return [];
+      if (!s.location || s.state === 'off_duty') return [];
       const stale = now.getTime() - new Date(s.location.at).getTime() > STALE_MS;
       return [
         {

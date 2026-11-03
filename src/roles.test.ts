@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layoutFor, pickLayout } from './roles';
+import { decideLayout, layoutFor } from './roles';
 
 describe('layoutFor: the highest role decides the screens', () => {
   it('gives field staff the field app', () => {
@@ -20,14 +20,20 @@ describe('layoutFor: the highest role decides the screens', () => {
   });
 });
 
-describe('pickLayout: saved roles and the answer from the server', () => {
-  it('opens the field app when nothing is known yet', () => {
-    expect(pickLayout(null, null)).toBe('field');
+describe('decideLayout: which screens to open while /me is on its way', () => {
+  it('waits while the saved roles are being read', () => {
+    expect(decideLayout(undefined, null, false)).toBeNull();
   });
-  it('uses the saved roles when the phone is offline', () => {
-    expect(pickLayout(['team_manager'], null)).toBe('team_manager');
+  it('waits for the server when nothing is saved, so office people never see the field app first', () => {
+    expect(decideLayout(null, null, false)).toBeNull();
   });
-  it('lets the server answer win over the saved roles', () => {
-    expect(pickLayout(['team_manager'], ['field_staff'])).toBe('field');
+  it('opens the field app when nothing is saved and the server cannot be reached', () => {
+    expect(decideLayout(null, null, true)).toBe('field');
+  });
+  it('opens the saved screens at once', () => {
+    expect(decideLayout(['team_manager'], null, false)).toBe('team_manager');
+  });
+  it('follows the server when it answers', () => {
+    expect(decideLayout(null, ['admin'], true)).toBe('admin');
   });
 });

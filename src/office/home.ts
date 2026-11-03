@@ -1,4 +1,4 @@
-import type { HelpRequestView, IncidentSummary, Overview, TicketSummary } from '../types';
+import type { HelpRequestView, IncidentSummary, Overview, TicketSummary, TicketType } from '../types';
 import type { TicketAction } from './actions';
 import type { OfficeLayout } from './shell';
 
@@ -13,6 +13,9 @@ export interface HomeData {
 export interface HomeCard {
   kind: 'late' | 'unassigned' | 'incident' | 'check' | 'help';
   id: string;
+  /** The ticket's code and type (empty and 'other' for help requests), for confirmations. */
+  code: string;
+  type: TicketType;
   title: string;
   detail: string;
   actions: TicketAction[];
@@ -21,6 +24,8 @@ export interface HomeCard {
 const ticketCard = (kind: HomeCard['kind'], t: TicketSummary, actions: TicketAction[]): HomeCard => ({
   kind,
   id: t.id,
+  code: t.code,
+  type: t.type,
   title: `${t.code} · ${t.title}`,
   detail: [t.address ?? t.areaName, t.assignee?.fullName ?? t.teamName].filter(Boolean).join(' · '),
   actions
@@ -29,7 +34,15 @@ const ticketCard = (kind: HomeCard['kind'], t: TicketSummary, actions: TicketAct
 const helpCards = (help: HelpRequestView[]): HomeCard[] =>
   help
     .filter((h) => h.status !== 'solved')
-    .map((h) => ({ kind: 'help', id: h.id, title: h.requestedBy.fullName, detail: h.message, actions: [] }));
+    .map((h) => ({
+      kind: 'help',
+      id: h.id,
+      code: '',
+      type: 'other',
+      title: h.requestedBy.fullName,
+      detail: h.message,
+      actions: []
+    }));
 
 /**
  * What needs doing first. Team managers: jobs nobody has, late jobs, help requests of the team.
