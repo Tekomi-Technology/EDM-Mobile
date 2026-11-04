@@ -38,8 +38,9 @@ const post = <T>(token: string, path: string, body: unknown = {}) =>
 
 /** The API endpoints the office screens use, the same ones the website calls. */
 export const officeApi = {
+  /** GET /tickets answers one page, { items, total }; the screens need only the tickets. */
   tickets: (token: string, query: { view?: string; q?: string; teamId?: string; limit?: number } = {}) =>
-    api<TicketSummary[]>(token, `/tickets${q(query)}`),
+    api<{ items: TicketSummary[]; total: number }>(token, `/tickets${q(query)}`).then((page) => page.items),
   counts: (token: string) => api<TicketCounts>(token, '/tickets/counts'),
   overview: (token: string) => api<Overview>(token, '/overview'),
   lookups: (token: string) => api<Lookups>(token, '/lookups'),
