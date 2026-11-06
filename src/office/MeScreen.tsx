@@ -1,8 +1,8 @@
 import Constants from 'expo-constants';
 import { useState } from 'react';
-import { Linking, ScrollView, Text, View } from 'react-native';
+import { Linking, Platform, ScrollView, Text, View } from 'react-native';
 import { APP_NAME } from '../appName';
-import { shortVersion } from '../version';
+import { platformVersion, shortVersion } from '../version';
 import { useAuth } from '../auth';
 import { PRIVACY_URL } from '../config';
 import { t } from '../i18n';
@@ -82,7 +82,7 @@ export function MeScreen({ nav }: { nav: OfficeNav }) {
         <Text style={[ui.label, { textAlign: 'center', marginTop: 8 }]}>
           {t('{app} · version {version}', {
             app: APP_NAME,
-            version: shortVersion(Constants.expoConfig?.version)
+            version: shortVersion(platformVersion(Constants.expoConfig, Platform.OS))
           })}
         </Text>
       </ScrollView>

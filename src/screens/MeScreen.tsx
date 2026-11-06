@@ -3,7 +3,7 @@ import type { HelpRequestView } from '../types';
 import { useState } from 'react';
 import { Alert, Linking, Platform, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 import { APP_NAME } from '../appName';
-import { shortVersion } from '../version';
+import { platformVersion, shortVersion } from '../version';
 import { useAuth } from '../auth';
 import { colors, PRIVACY_URL } from '../config';
 import { ACTION_LABEL } from '../offline/engine';
@@ -267,7 +267,7 @@ export function MeScreen() {
         <Text style={[styles.label, { textAlign: 'center', marginTop: 8 }]}>
           {t('{app} · version {version}', {
             app: APP_NAME,
-            version: shortVersion(Constants.expoConfig?.version)
+            version: shortVersion(platformVersion(Constants.expoConfig, Platform.OS))
           })}
         </Text>
       </ScrollView>
