@@ -185,7 +185,7 @@ export function MeScreen() {
                 ? t(
                     Platform.OS === 'android'
                       ? 'Not allowed. Open the phone settings and allow location for Tekomi Taski.'
-                      : 'Not allowed. Open the phone settings and allow location “all the time” for EDM Service.'
+                      : 'Not allowed. Open the phone settings and allow location “all the time” for Tekomi Taski.'
                   )
                 : t('Not shared now. It starts when you go on duty.')}
           </Text>

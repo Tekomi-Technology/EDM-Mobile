@@ -1,4 +1,2 @@
-import { Platform } from 'react-native';
-
-/** The name people see: Tekomi Taski on Google Play (see assets.ts), EDM Service on the App Store. */
-export const APP_NAME = Platform.OS === 'android' ? 'Tekomi Taski' : 'EDM Service';
+/** The name people see, on Google Play and the App Store (see assets.ts). */
+export const APP_NAME = 'Tekomi Taski';

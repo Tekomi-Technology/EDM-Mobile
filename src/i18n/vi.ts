@@ -187,8 +187,8 @@ export const vi: Record<string, string> = {
   Location: 'Vị trí',
   'Shared with your team and the office while you are on duty, also with the screen off. It stops when you go off duty.':
     'Được chia sẻ với đội và văn phòng khi bạn đang trực, kể cả khi tắt màn hình. Dừng chia sẻ khi bạn nghỉ trực.',
-  'Not allowed. Open the phone settings and allow location “all the time” for EDM Service.':
-    'Chưa được phép. Hãy mở cài đặt điện thoại và cho EDM Service dùng vị trí "luôn luôn".',
+  'Not allowed. Open the phone settings and allow location “all the time” for Tekomi Taski.':
+    'Chưa được phép. Hãy mở cài đặt điện thoại và cho Tekomi Taski dùng vị trí "luôn luôn".',
   'Not shared now. It starts when you go on duty.': 'Hiện không chia sẻ. Sẽ bắt đầu khi bạn bật trực.',
   'My van · {0}': 'Xe của tôi · {0}',
   'Nothing in the van. Ask your manager for material.': 'Xe đang trống. Hãy xin vật tư từ quản lý.',

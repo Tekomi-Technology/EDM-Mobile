@@ -1,4 +1,4 @@
-# EDM Service (mobile app)
+# Tekomi Taski (mobile app)
 
 The mobile app of EDM Tasks, for everyone at EDM. Field staff get their jobs: accept / start / pause / finish,
 photos, materials from the van, new customer surveys and connections, help from the office, and location sharing
@@ -8,14 +8,13 @@ supervisors and administrators get the office screens (see below).
 Expo SDK 58 · React Native 0.88 · TypeScript. The server (API, web, database) is in the
 [EDM-Task-Management](https://github.com/Tekomi-Technology) repository; the app talks to it only through its API.
 
-## Name and logo per store
+## Name and logo
 
-On the App Store the app is **EDM Service** with the EDM emblem. On Google Play it is **Tekomi Taski** with the
-Tekomi logo: Google Play refused the EDM name and emblem from Tekomi's developer account (Impersonation policy,
-5 November 2026) until EDM's written permission is accepted. The Android name is set by
-`plugins/with-android-app-name.js` and `src/appName.ts`, the Android icons are `assets/android-icon-*.png` and
-`assets/tekomi-icon.png`, and the logos inside the app come from `src/assets.android.ts` (Android) and
-`src/assets.ts` (iOS), so no EDM image is bundled into the Android app.
+The app is **Tekomi Taski** with the Tekomi logo on both Google Play and the App Store. Google Play refused the EDM
+name and emblem from Tekomi's developer account (Impersonation policy, 5 November 2026), so both stores carry the
+Tekomi brand until EDM's written permission is accepted. The name is `name` in `app.json` and `src/appName.ts`; the
+icons are `assets/tekomi-icon.png` and `assets/android-icon-*.png`; the logos inside the app come from `src/assets.ts`.
+The bundle ID and Android package stay `mz.co.edm.field`: the stores do not allow changing them.
 
 ## Requirements
 

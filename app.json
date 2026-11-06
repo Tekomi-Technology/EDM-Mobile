@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "EDM Service",
+    "name": "Tekomi Taski",
     "slug": "edm-field",
-    "version": "1.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/tekomi-icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
@@ -14,8 +14,6 @@
       }
     },
     "android": {
-      "version": "1.0.0",
-      "icon": "./assets/tekomi-icon.png",
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -50,7 +48,7 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "EDM Service uses the camera to take photos of the work you have done.",
+          "cameraPermission": "Tekomi Taski uses the camera to take photos of the work you have done.",
           "photosPermission": false,
           "microphonePermission": false
         }
@@ -64,17 +62,16 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "EDM Service shares your location with your team and the office while you are on duty, so the nearest person gets urgent jobs. It stops when you go off duty.",
-          "locationWhenInUsePermission": "EDM Service shares your location with your team and the office while you are on duty.",
+          "locationAlwaysAndWhenInUsePermission": "Tekomi Taski shares your location with your team and the office while you are on duty, so the nearest person gets urgent jobs. It stops when you go off duty.",
+          "locationWhenInUsePermission": "Tekomi Taski shares your location with your team and the office while you are on duty.",
           "isAndroidBackgroundLocationEnabled": false,
           "isAndroidForegroundServiceEnabled": true,
           "isIosBackgroundLocationEnabled": true,
-          "locationAlwaysPermission": "EDM Service shares your location with your team and the office while you are on duty, so the nearest person gets urgent jobs. It stops when you go off duty.",
+          "locationAlwaysPermission": "Tekomi Taski shares your location with your team and the office while you are on duty, so the nearest person gets urgent jobs. It stops when you go off duty.",
           "motionUsagePermission": false
         }
       ],
-      "expo-font",
-      ["./plugins/with-android-app-name.js", { "name": "Tekomi Taski" }]
+      "expo-font"
     ],
     "scheme": "edm",
     "extra": {

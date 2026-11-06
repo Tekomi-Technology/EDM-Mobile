@@ -190,8 +190,8 @@ export const pt: Record<string, string> = {
   Location: 'Localização',
   'Shared with your team and the office while you are on duty, also with the screen off. It stops when you go off duty.':
     'Partilhada com a sua equipa e o escritório enquanto está de serviço, mesmo com o ecrã desligado. Para quando sai de serviço.',
-  'Not allowed. Open the phone settings and allow location “all the time” for EDM Service.':
-    'Não permitida. Abra as definições do telemóvel e permita a localização "sempre" para o EDM Service.',
+  'Not allowed. Open the phone settings and allow location “all the time” for Tekomi Taski.':
+    'Não permitida. Abra as definições do telemóvel e permita a localização "sempre" para o Tekomi Taski.',
   'Not shared now. It starts when you go on duty.': 'Não partilhada agora. Começa quando entrar de serviço.',
   'My van · {0}': 'A minha viatura · {0}',
   'Nothing in the van. Ask your manager for material.': 'Nada na viatura. Peça material ao seu chefe.',
