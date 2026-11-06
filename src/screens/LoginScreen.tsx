@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
-import { EDM_LOGO } from '../assets';
+import { BRAND_LABEL, BRAND_LOGO } from '../assets';
 import { signInMessage, useAuth } from '../auth';
 import { APP_NAME } from '../appName';
 import { colors } from '../config';
@@ -52,10 +52,10 @@ function Frame({ subtitle, children }: { subtitle: string; children: React.React
       >
         <View style={{ alignItems: 'center', gap: 12 }}>
           <Image
-            source={EDM_LOGO}
+            source={BRAND_LOGO}
             style={{ width: 160, height: 142 }}
             resizeMode="contain"
-            accessibilityLabel={t('Electricidade de Moçambique, E.P.')}
+            accessibilityLabel={BRAND_LABEL}
           />
           <Text style={[styles.title, { fontSize: 30 }]}>{APP_NAME}</Text>
           <Text style={[styles.label, { fontSize: 16, textAlign: 'center' }]}>{subtitle}</Text>

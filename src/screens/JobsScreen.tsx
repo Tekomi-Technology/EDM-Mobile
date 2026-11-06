@@ -1,7 +1,7 @@
 import type { TeamOffer, TicketSummary } from '../types';
 import { useState } from 'react';
 import { Image, Linking, Platform, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
-import { EDM_EMBLEM } from '../assets';
+import { BRAND_EMBLEM, BRAND_LABEL } from '../assets';
 import { colors } from '../config';
 import { locale, t, ticketTitle } from '../i18n';
 import { ACTION_LABEL, type Conflict } from '../offline/engine';
@@ -70,7 +70,12 @@ export function JobsScreen({ onOpen }: { onOpen: (id: string) => void }) {
     <View style={styles.screen}>
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <Image source={EDM_EMBLEM} style={{ width: 46, height: 46 }} accessibilityLabel={t('EDM logo')} />
+          <Image
+            source={BRAND_EMBLEM}
+            style={{ width: 46, height: 46 }}
+            resizeMode="contain"
+            accessibilityLabel={BRAND_LABEL}
+          />
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text }}>
               {greeting()}

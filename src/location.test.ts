@@ -55,7 +55,7 @@ describe('startTracking on Android', () => {
       m.requestForeground.mock.invocationCallOrder[0]!
     );
     expect(m.alert.mock.calls[0]![1]).toContain('even when the app is closed or not in use');
-    expect(m.start.mock.calls[0]![1].foregroundService.notificationTitle).toBe('EDM Tasks');
+    expect(m.start.mock.calls[0]![1].foregroundService.notificationTitle).toBe('Tekomi Taski');
   });
 
   it('does not ask for the permission after "Not now"', async () => {

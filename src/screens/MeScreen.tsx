@@ -184,7 +184,7 @@ export function MeScreen() {
               : offline.locationStatus === 'denied'
                 ? t(
                     Platform.OS === 'android'
-                      ? 'Not allowed. Open the phone settings and allow location for EDM Tasks.'
+                      ? 'Not allowed. Open the phone settings and allow location for Tekomi Taski.'
                       : 'Not allowed. Open the phone settings and allow location “all the time” for EDM Service.'
                   )
                 : t('Not shared now. It starts when you go on duty.')}

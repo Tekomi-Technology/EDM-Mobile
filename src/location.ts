@@ -69,7 +69,7 @@ function explainLocation(): Promise<boolean> {
     Alert.alert(
       t('Location while on duty'),
       t(
-        'EDM Tasks collects your location to share it with your team and the office, suggest the nearest person for urgent jobs and show how far away jobs are, even when the app is closed or not in use. This only happens while you are on duty and stops when you go off duty.'
+        'Tekomi Taski collects your location to share it with your team and the office, suggest the nearest person for urgent jobs and show how far away jobs are, even when the app is closed or not in use. This only happens while you are on duty and stops when you go off duty.'
       ),
       [
         { text: t('Not now'), style: 'cancel', onPress: () => resolve(false) },

@@ -109,7 +109,6 @@ export const pt: Record<string, string> = {
   'Good morning': 'Bom dia',
   'Good afternoon': 'Boa tarde',
   'Good evening': 'Boa noite',
-  'EDM logo': 'Logótipo EDM',
   'Team {0}': 'Equipa {0}',
   'On duty': 'De serviço',
   'Off duty': 'Fora de serviço',
@@ -155,7 +154,6 @@ export const pt: Record<string, string> = {
   'Ask for help': 'Pedir ajuda',
   'What do you need?': 'De que precisa?',
   'Send to the office': 'Enviar ao escritório',
-  'Electricidade de Moçambique, E.P.': 'Electricidade de Moçambique, E.P.',
   'Your technical jobs, on your phone': 'Os seus trabalhos técnicos, no telemóvel',
   Username: 'Nome de utilizador',
   Password: 'Palavra-passe',
@@ -205,13 +203,13 @@ export const pt: Record<string, string> = {
   'Send now': 'Enviar agora',
   Language: 'Idioma',
   '{app} · version {version}': '{app} · versão {version}',
-  'Not allowed. Open the phone settings and allow location for EDM Tasks.':
-    'Não permitida. Abra as definições do telemóvel e permita a localização para o EDM Tasks.',
+  'Not allowed. Open the phone settings and allow location for Tekomi Taski.':
+    'Não permitida. Abra as definições do telemóvel e permita a localização para o Tekomi Taski.',
   'Allow location, so the office sees where you are and jobs show how far away they are. It is only shared while you are on duty.':
     'Permita a localização, para que o escritório veja onde está e os trabalhos mostrem a que distância estão. Só é partilhada enquanto está de serviço.',
   'Location while on duty': 'Localização enquanto de serviço',
-  'EDM Tasks collects your location to share it with your team and the office, suggest the nearest person for urgent jobs and show how far away jobs are, even when the app is closed or not in use. This only happens while you are on duty and stops when you go off duty.':
-    'O EDM Tasks recolhe a sua localização para a partilhar com a sua equipa e o escritório, sugerir a pessoa mais próxima para trabalhos urgentes e mostrar a que distância estão os trabalhos, mesmo quando a aplicação está fechada ou não está a ser utilizada. Isto só acontece enquanto está de serviço e termina quando sai de serviço.',
+  'Tekomi Taski collects your location to share it with your team and the office, suggest the nearest person for urgent jobs and show how far away jobs are, even when the app is closed or not in use. This only happens while you are on duty and stops when you go off duty.':
+    'O Tekomi Taski recolhe a sua localização para a partilhar com a sua equipa e o escritório, sugerir a pessoa mais próxima para trabalhos urgentes e mostrar a que distância estão os trabalhos, mesmo quando a aplicação está fechada ou não está a ser utilizada. Isto só acontece enquanto está de serviço e termina quando sai de serviço.',
   'Not now': 'Agora não',
   Continue: 'Continuar',
   'Privacy policy': 'Política de privacidade',
